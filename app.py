@@ -1,6 +1,5 @@
 from flask import Flask, render_template
 
-
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
 # Create a Flask Instance
@@ -28,10 +27,13 @@ def user(name):
 # Invalid URL
 @app.errorhandler(404)
 def page_not_found(e):
-    return  render_template("404.html")
+    return render_template("404.html")
 
 
 # Invalid URL
 @app.errorhandler(500)
 def page_not_found(e):
-    return  render_template("500.html")
+    return render_template("500.html")
+
+
+# Ended on episode #4 - Start on 5th
