@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, EqualTo, Length
@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from datetime import datetime
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# Ended on 19 start on 20
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
@@ -20,7 +22,7 @@ app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
 # New MySQL DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:yourpassword@localhost/users'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/users'
 # Secret Key
 app.config['SECRET_KEY'] = "secretkey"
 # Initialize The Database
@@ -59,6 +61,26 @@ def post(id):
     post = Posts.query.get_or_404(id)
     return render_template("post.html", post=post)
 
+# Edit Post
+@app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
+def edit_post(id):
+    post = Posts.query.get_or_404(id)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.author = form.author.data
+        post.slug = form.slug.data
+        post.content = form.content.data
+        # Update Database
+        db.session.add(post)
+        db.session.commit()
+        flash("Post Has Been Updated!")
+        return redirect(url_for('post', id=post.id))
+    form.title.data = post.title
+    form.author.data = post.author
+    form.slug.data = post.slug
+    form.content.data = post.content
+    return render_template('edit_post.html', form=form)
 
 # Add Post Page
 @app.route('/add-post', methods=['GET', 'POST'])
@@ -118,7 +140,7 @@ class Users(db.Model):
     def __repr__(self):
         return '<Name %r>' % self.name
 
-
+# Delete User
 @app.route('/delete/<int:id>')
 def delete(id):
     user_to_delete = Users.query.get_or_404(id)
@@ -191,7 +213,7 @@ class NamerForm(FlaskForm):
     name = StringField("What's Your Name", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
-
+# Add User
 @app.route('/user/add', methods=['GET', 'POST'])
 def add_user():
     name = None
