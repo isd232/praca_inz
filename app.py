@@ -49,6 +49,30 @@ class PostForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+@app.route('/posts/delete/<int:id>')
+def delete_post(id):
+    post_to_delete = Posts.query.get_or_404(id)
+
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+
+        # Return a message
+        flash("Blog Post Was Deleted!")
+
+        # Grab all the posts from the database
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
+
+    except:
+        # Return an error message
+        flash("There was a problem deleting post, try again...")
+
+        # Grab all the posts from the database
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
+
+
 @app.route('/posts')
 def posts():
     # Grab all the posts from the database
