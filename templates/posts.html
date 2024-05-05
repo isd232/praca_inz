@@ -13,7 +13,7 @@
 {% for post in posts %}
 <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
     <h2><a href="{{ url_for('post', id=post.id) }}">{{ post.title }}</a><br/></h2>
-    <small>By: {{ post.author }}<br/>
+    <small>By: {{ post.poster.name }}<br/>
     {{ post.date_posted }}</small><br/><br/>
 
     {{ post.content }}<br/><br/>
