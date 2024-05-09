@@ -6,6 +6,7 @@ from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
+from flask_ckeditor import CKEditor
 
 # Ended on 31 start on 32
 
@@ -15,6 +16,8 @@ from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, Sea
 
 # Create a Flask Instance
 app = Flask(__name__)
+# Add CKEditor
+ckeditor = CKEditor(app)
 # Add Database
 # Old SQLite DB
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'

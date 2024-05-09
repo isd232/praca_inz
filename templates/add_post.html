@@ -2,6 +2,7 @@
 
 {% block content %}
 
+
 {% for message in get_flashed_messages() %}
     <div class="alert alert-warning alert-dismissible fade show" role="alert">
         {{ message }}
@@ -41,6 +42,8 @@
             {{ form.submit(class="btn btn-secondary") }}
 
         </form>
+        {{ ckeditor.load() }}
+        {{ ckeditor.config(name='content') }}
     </div>
 {% else %}
 <h2>Must Be Loged In...</h2>
