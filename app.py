@@ -5,9 +5,9 @@ from datetime import datetime
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm
+from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
 
-# Ended on 29 start on 30
+# Ended on 31 start on 32
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
@@ -36,6 +36,31 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))
+
+
+# Pass Stuff To Navbar
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
+
+
+# Create Search Function
+@app.route('/search', methods=["POST"])
+def search():
+    form = SearchForm()
+    posts = Posts.query
+    if form.validate_on_submit():
+        # Get data from submitted form
+        post.searched = form.searched.data
+        # Query the Database
+        posts = posts.filter(Posts.content.like('%' + post.searched + '%'))
+        posts = posts.order_by(Posts.title).all()
+
+        return render_template("search.html",
+                               form=form,
+                               searched=post.searched,
+                               posts=posts)
 
 
 # Create Login Page
