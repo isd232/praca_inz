@@ -8,7 +8,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, log
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
 from flask_ckeditor import CKEditor
 
-# Ended on 31 start on 32
+# Ended on 32 start on 33
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
@@ -48,6 +48,16 @@ def base():
     return dict(form=form)
 
 
+# Create Admin Page
+@app.route('/admin')
+@login_required
+def admin():
+    id = current_user.id
+    if id == 12:
+        return render_template("admin.html")
+    else:
+        flash("Sorry you must be the Admin to access admin page...")
+        return redirect(url_for('dashboard'))
 # Create Search Function
 @app.route('/search', methods=["POST"])
 def search():
