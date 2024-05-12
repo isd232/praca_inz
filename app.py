@@ -11,7 +11,7 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 
-# Ended on 37 start on 38
+# Ended on 38 start on 39
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
@@ -472,6 +472,6 @@ class Users(db.Model, UserMixin):
 # Check if the executed file is the main program and not a module imported elsewhere
 if __name__ == '__main__':
     # Set Flask configuration to development mode explicitly
-    app.config['ENV'] = 'development'
-    app.config['DEBUG'] = True
+    # app.config['ENV'] = 'development'
+    # app.config['DEBUG'] = True
     app.run()  # Start the Flask application
