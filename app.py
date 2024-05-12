@@ -159,35 +159,38 @@ def dashboard():
 @app.route('/posts/delete/<int:id>')
 @login_required
 def delete_post(id):
-    post_to_delete = Posts.query.get_or_404(id)
-    id = current_user.id
-    if id == post_to_delete.poster.id:
-        try:
-            db.session.delete(post_to_delete)
-            db.session.commit()
+    if id == current_user.id:
+        post_to_delete = Posts.query.get_or_404(id)
+        id = current_user.id
+        if id == post_to_delete.poster.id:
+            try:
+                db.session.delete(post_to_delete)
+                db.session.commit()
 
+                # Return a message
+                flash("Blog Post Was Deleted!")
+
+                # Grab all the posts from the database
+                posts = Posts.query.order_by(Posts.date_posted)
+                return render_template("posts.html", posts=posts)
+            except:
+                # Return an error message
+                flash("There was a problem deleting post, try again...")
+
+                # Grab all the posts from the database
+                posts = Posts.query.order_by(Posts.date_posted)
+                return render_template("posts.html", posts=posts)
+        else:
             # Return a message
-            flash("Blog Post Was Deleted!")
-
-            # Grab all the posts from the database
-            posts = Posts.query.order_by(Posts.date_posted)
-            return render_template("posts.html", posts=posts)
-        except:
-            # Return an error message
-            flash("There was a problem deleting post, try again...")
+            flash("You Aren't Authorized To Delete That Post!")
 
             # Grab all the posts from the database
             posts = Posts.query.order_by(Posts.date_posted)
             return render_template("posts.html", posts=posts)
     else:
-        # Return a message
-        flash("You Aren't Authorized To Delete That Post!")
-
-        # Grab all the posts from the database
-        posts = Posts.query.order_by(Posts.date_posted)
-        return render_template("posts.html", posts=posts)
-
-
+        # Return an error message
+        flash("Sorry, you can't delete that user! ")
+        return redirect(url_for('dashboard'))
 @app.route('/posts')
 def posts():
     # Grab all the posts from the database
@@ -445,7 +448,7 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
-    about_author = db.Column(db.Text(500), nullable=True)
+    about_author = db.Column(db.Text(), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     profile_pic = db.Column(db.String(500), nullable=True)
     # Password Hashing
@@ -472,6 +475,6 @@ class Users(db.Model, UserMixin):
 # Check if the executed file is the main program and not a module imported elsewhere
 if __name__ == '__main__':
     # Set Flask configuration to development mode explicitly
-    # app.config['ENV'] = 'development'
-    # app.config['DEBUG'] = True
+    app.config['ENV'] = 'development'
+    app.config['DEBUG'] = True
     app.run()  # Start the Flask application
