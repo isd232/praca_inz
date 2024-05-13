@@ -8,11 +8,35 @@ from flask_ckeditor import CKEditorField
 
 # Create Fuel Calc Form
 class FuelForm(FlaskForm):
-    distance = FloatField('Distance in Kilometers', validators=[DataRequired()])
-    fuel_efficiency = FloatField('Fuel Efficiency (Liters per 100 KM)', validators=[DataRequired()])
-    fuel_price = FloatField('Fuel Price', validators=[DataRequired()])
-    currency = SelectField('Currency', choices=[('PLN', 'PLN'), ('EUR', 'Euro'), ('USD', 'Dollar')], validators=[DataRequired()])
+    distance = FloatField('Distance in kilometers', validators=[DataRequired()])
+    fuel_efficiency = FloatField('Fuel efficiency (Liters per 100 KM)', validators=[DataRequired()])
+    fuel_price = FloatField('Fuel price per liter (PLN)', validators=[DataRequired()])
     submit = SubmitField('Calculate')
+
+
+# Create Currency Exchange Form
+class CurrencyForm(FlaskForm):
+    amount = FloatField('Amount', validators=[DataRequired()])
+    from_currency = SelectField('From', choices=[
+        ('PLN', 'Polish Zloty'),
+        ('EUR', 'Euro'),
+        ('BAM', 'Bosnian Convertible Mark'),
+        ('ALL', 'Albanian Lek'),
+        ('MKD', 'Macedonian Denar'),
+        ('RSD', 'Serbian Dinar'),
+        ('HUF', 'Hungarian Forint')
+    ], validators=[DataRequired()])
+    to_currency = SelectField('To', choices=[
+        ('PLN', 'Polish Zloty'),
+        ('EUR', 'Euro'),
+        ('BAM', 'Bosnian Convertible Mark'),
+        ('ALL', 'Albanian Lek'),
+        ('MKD', 'Macedonian Denar'),
+        ('RSD', 'Serbian Dinar'),
+        ('HUF', 'Hungarian Forint')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Convert')
+
 
 # Create Search Form
 class SearchForm(FlaskForm):

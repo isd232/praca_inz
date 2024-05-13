@@ -1,20 +1,103 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Fuel Consumption Calculator</h1>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        Distance (km): {{ form.distance() }}<br>
-        Fuel Efficiency (L/100km): {{ form.fuel_efficiency() }}<br>
-        Fuel Price: {{ form.fuel_price() }}<br>
-        Currency: {{ form.currency() }}<br>
-        {{ form.submit() }}
-    </form>
-    {% if calculations %}
-        <h3>Last 5 Calculations:</h3>
-        {% for calc in calculations %}
-            <p>{{ calc.distance }} km, {{ calc.fuel_efficiency }} L/100km, {{ calc.fuel_price }} {{ calc.currency }}</p>
+<h1>Fuel Consumption Calculator</h1>
+<form method="POST" action="{{ url_for('fuel_calculator') }}">
+    {{ fuel_form.hidden_tag() }}
+    <div>
+        <label for="distance">Distance (km):</label>
+        {{ fuel_form.distance(id='distance', class_='form-control') }}
+        {% if fuel_form.distance.errors %}
+            {% for error in fuel_form.distance.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div>
+        <label for="fuel_efficiency">Fuel Efficiency (L/100km):</label>
+        {{ fuel_form.fuel_efficiency(id='fuel_efficiency', class_='form-control') }}
+        {% if fuel_form.fuel_efficiency.errors %}
+            {% for error in fuel_form.fuel_efficiency.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div>
+        <label for="fuel_price">Fuel Price (PLN):</label>
+        {{ fuel_form.fuel_price(id='fuel_price', class_='form-control') }}
+        {% if fuel_form.fuel_price.errors %}
+            {% for error in fuel_form.fuel_price.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary" name="fuel_submit">Calculate</button>
+    </div>
+</form>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == 'fuel' %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endif %}
         {% endfor %}
     {% endif %}
+{% endwith %}
 
+{% if total_cost_pln %}
+    <h3>Total Cost: {{ total_cost_pln }} PLN</h3>
+{% endif %}
+
+<h1>Currency Converter</h1>
+<form method="POST" action="{{ url_for('fuel_calculator') }}">
+    {{ currency_form.hidden_tag() }}
+    <div>
+        <label for="amount">Amount:</label>
+        {{ currency_form.amount(id='amount', class_='form-control') }}
+        {% if currency_form.amount.errors %}
+            {% for error in currency_form.amount.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div>
+        <label for="from_currency">From:</label>
+        {{ currency_form.from_currency(id='from_currency', class_='form-control') }}
+    </div>
+    <div>
+        <label for="to_currency">To:</label>
+        {{ currency_form.to_currency(id='to_currency', class_='form-control') }}
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary" name="currency_submit">Convert</button>
+    </div>
+</form>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == 'currency' %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% if conversion_result %}
+    <h3>Conversion Result: {{ conversion_result }}</h3>
+{% endif %}
+
+<h3>Last 5 Calculations:</h3>
+<ul>
+    {% for calc in calculations %}
+        <li>
+            {{ calc.distance }} km, {{ calc.fuel_efficiency }} L/100km,
+            {{ calc.fuel_price }} PLN per liter,
+            Total Cost: {{ calc.total_cost }} PLN,
+            calculated at {{ calc.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+        </li>
+    {% endfor %}
+</ul>
 {% endblock %}
