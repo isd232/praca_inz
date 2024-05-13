@@ -65,6 +65,8 @@ def admin():
     else:
         flash("Sorry you must be the Admin to access admin page...")
         return redirect(url_for('dashboard'))
+
+
 # Create Search Function
 @app.route('/search', methods=["POST"])
 def search():
@@ -121,7 +123,6 @@ def dashboard():
     if request.method == "POST":
         name_to_update.name = request.form['name']
         name_to_update.email = request.form['email']
-        name_to_update.favorite_color = request.form['favorite_color']
         name_to_update.username = request.form['username']
         name_to_update.about_author = request.form['about_author']
 
@@ -154,7 +155,7 @@ def dashboard():
         else:
             db.session.commit()
             flash("User Updated Successfully!")
-            return render_template("dashboard.html",form=form,name_to_update=name_to_update,id=id)
+            return render_template("dashboard.html", form=form, name_to_update=name_to_update, id=id)
     else:
         return render_template("dashboard.html",
                                form=form,
@@ -166,38 +167,37 @@ def dashboard():
 @app.route('/posts/delete/<int:id>')
 @login_required
 def delete_post(id):
-    if id == current_user.id:
-        post_to_delete = Posts.query.get_or_404(id)
-        id = current_user.id
-        if id == post_to_delete.poster.id:
-            try:
-                db.session.delete(post_to_delete)
-                db.session.commit()
+    post_to_delete = Posts.query.get_or_404(id)
+    id = current_user.id
+    if id == post_to_delete.poster.id or id == 13:
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
 
-                # Return a message
-                flash("Blog Post Was Deleted!")
-
-                # Grab all the posts from the database
-                posts = Posts.query.order_by(Posts.date_posted)
-                return render_template("posts.html", posts=posts)
-            except:
-                # Return an error message
-                flash("There was a problem deleting post, try again...")
-
-                # Grab all the posts from the database
-                posts = Posts.query.order_by(Posts.date_posted)
-                return render_template("posts.html", posts=posts)
-        else:
             # Return a message
-            flash("You Aren't Authorized To Delete That Post!")
+            flash("Blog Post Was Deleted!")
+
+            # Grab all the posts from the database
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template("posts.html", posts=posts)
+
+
+        except:
+            # Return an error message
+            flash("Whoops! There was a problem deleting post, try again...")
 
             # Grab all the posts from the database
             posts = Posts.query.order_by(Posts.date_posted)
             return render_template("posts.html", posts=posts)
     else:
-        # Return an error message
-        flash("Sorry, you can't delete that user! ")
-        return redirect(url_for('dashboard'))
+        # Return a message
+        flash("You Aren't Authorized To Delete That Post!")
+
+        # Grab all the posts from the database
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
+
+
 @app.route('/posts')
 def posts():
     # Grab all the posts from the database
@@ -228,7 +228,7 @@ def edit_post(id):
         flash("Post Has Been Updated!")
         return redirect(url_for('post', id=post.id))
 
-    if current_user.id == post.poster_id:
+    if current_user.id == post.poster_id or current_user.id == 13:
         form.title.data = post.title
         # form.author.data = post.author
         form.slug.data = post.slug
@@ -309,7 +309,6 @@ def update(id):
     if request.method == "POST":
         name_to_update.name = request.form['name']
         name_to_update.email = request.form['email']
-        name_to_update.favorite_color = request.form['favorite_color']
         name_to_update.username = request.form['username']
         try:
             db.session.commit()
@@ -344,7 +343,6 @@ def add_user():
             user = Users(username=form.username.data,
                          name=form.name.data,
                          email=form.email.data,
-                         favorite_color=form.favorite_color.data,
                          password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
@@ -352,7 +350,6 @@ def add_user():
         form.name.data = ''
         form.username.data = ''
         form.email.data = ''
-        form.favorite_color.data = ''
         form.password_hash = ''
         flash("User Added Successfully!")
     our_users = Users.query.order_by(Users.date_added)
@@ -454,7 +451,6 @@ class Users(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
-    favorite_color = db.Column(db.String(120))
     about_author = db.Column(db.Text(), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     profile_pic = db.Column(db.String(500), nullable=True)
