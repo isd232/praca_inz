@@ -6,10 +6,11 @@ from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
+from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm
 from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
+import requests
 
 # Ended on 38 start on 39
 
@@ -163,6 +164,59 @@ def dashboard():
                                id=id)
     return render_template('dashboard.html')
 
+
+def get_currency_rate(base, target='PLN'):
+    response = requests.get(f"https://api.exchangerate-api.com/v4/latest/{base}")
+    data = response.json()
+    return data['rates'][target]
+
+
+# Get Live Currencies exchange rate
+def get_live_rate(from_currency, to_currency):
+    api_key = 'e2e106a00f79a1794cceb807'
+    url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{from_currency}/{to_currency}"
+    response = requests.get(url)
+    data = response.json()
+
+    if data['result'] == 'success':
+        return data['conversion_rate']
+    else:
+        raise Exception("API call failed or returned an error")
+
+
+@app.route('/fuel_calculator', methods=['GET', 'POST'])
+@login_required
+def fuel_calculator():
+    form = FuelForm()
+    if form.validate_on_submit():
+        distance = form.distance.data
+        fuel_efficiency = form.fuel_efficiency.data
+        fuel_price = form.fuel_price.data
+        currency = form.currency.data
+
+        # Convert fuel price from PLN if necessary
+        if currency != 'PLN':
+            conversion_rate = get_live_rate('PLN', currency)
+            fuel_price = fuel_price * conversion_rate
+
+        # Calculate total fuel cost in the selected currency
+        total_cost = (distance / 100) * fuel_efficiency * fuel_price
+
+        new_calc = FuelCalculation(
+            user_id=current_user.id,
+            distance=distance,
+            fuel_efficiency=fuel_efficiency,
+            fuel_price=fuel_price,
+            currency=currency
+        )
+        db.session.add(new_calc)
+        db.session.commit()
+
+        flash(f'Total Fuel Cost (in {currency}): {total_cost:.2f} {currency}', 'success')
+        return redirect(url_for('fuel_calculator'))
+
+    calculations = FuelCalculation.query.filter_by(user_id=current_user.id).order_by(FuelCalculation.created_at.desc()).limit(5)
+    return render_template('fuel_calculator.html', form=form, calculations=calculations)
 
 @app.route('/posts/delete/<int:id>')
 @login_required
@@ -473,6 +527,21 @@ class Users(db.Model, UserMixin):
     # Create A String
     def __repr__(self):
         return '<Name %r>' % self.name
+
+
+# Create Fuel Consumption Model
+class FuelCalculation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('Users', backref=db.backref('calculations', lazy=True))
+    distance = db.Column(db.Float, nullable=False)
+    fuel_efficiency = db.Column(db.Float, nullable=False)
+    fuel_price = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<FuelCalculation {self.distance} km, {self.fuel_efficiency} L/100km, {self.fuel_price} {self.currency}>'
 
 
 # Check if the executed file is the main program and not a module imported elsewhere

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Fuel Consumption Calculator</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        Distance (km): {{ form.distance() }}<br>
+        Fuel Efficiency (L/100km): {{ form.fuel_efficiency() }}<br>
+        Fuel Price: {{ form.fuel_price() }}<br>
+        Currency: {{ form.currency() }}<br>
+        {{ form.submit() }}
+    </form>
+    {% if calculations %}
+        <h3>Last 5 Calculations:</h3>
+        {% for calc in calculations %}
+            <p>{{ calc.distance }} km, {{ calc.fuel_efficiency }} L/100km, {{ calc.fuel_price }} {{ calc.currency }}</p>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

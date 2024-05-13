@@ -1,10 +1,18 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError, TextAreaField, FloatField, SelectField
 from wtforms.validators import DataRequired, EqualTo, Length
 from wtforms.widgets import TextArea
 from flask_ckeditor import CKEditorField
 
+
+# Create Fuel Calc Form
+class FuelForm(FlaskForm):
+    distance = FloatField('Distance in Kilometers', validators=[DataRequired()])
+    fuel_efficiency = FloatField('Fuel Efficiency (Liters per 100 KM)', validators=[DataRequired()])
+    fuel_price = FloatField('Fuel Price', validators=[DataRequired()])
+    currency = SelectField('Currency', choices=[('PLN', 'PLN'), ('EUR', 'Euro'), ('USD', 'Dollar')], validators=[DataRequired()])
+    submit = SubmitField('Calculate')
 
 # Create Search Form
 class SearchForm(FlaskForm):
