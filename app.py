@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, redirect, url_for
+from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -11,6 +11,7 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
+import json
 
 # Ended on 38 start on 39
 
@@ -175,6 +176,38 @@ def get_exchange_rates():
         raise Exception(f"API error: {data.get('error-type', 'Unknown error')}")
 
     return data['conversion_rates']
+
+
+@app.route('/save_route', methods=['POST'])
+@login_required
+def save_route():
+    data = request.get_json()
+    route_name = data.get('name')
+    waypoints = json.dumps(data.get('waypoints'))
+
+    new_route = Route(user_id=current_user.id, name=route_name, waypoints=waypoints)
+    db.session.add(new_route)
+    db.session.commit()
+
+    return jsonify({'message': 'Route saved successfully'})
+
+@app.route('/routes')
+@login_required
+def routes():
+    routes = Route.query.filter_by(user_id=current_user.id).all()
+    return render_template('routes.html', routes=routes)
+
+@app.route('/route/<int:route_id>')
+@login_required
+def route(route_id):
+    route = Route.query.get_or_404(route_id)
+    waypoints = json.loads(route.waypoints)
+    return render_template('route.html', route=route, waypoints=waypoints)
+
+@app.route('/create_route')
+@login_required
+def create_route():
+    return render_template('create_route.html')
 
 
 # Create Fuel Calculator Page
@@ -495,6 +528,7 @@ class Users(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     # User Can Have Many Posts
     posts = db.relationship('Posts', backref='poster')
+    routes = db.relationship('Route', backref='user', lazy=True)
 
     @property
     def password(self):

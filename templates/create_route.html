@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Create a Route</h1>
+<div id="map" style="height: 500px;"></div>
+<button id="save-route-btn" class="btn btn-primary mt-3">Save Route</button>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet Control Geocoder Plugin -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<!-- Leaflet Routing Machine Plugin -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+<script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+<script>
+    var map = L.map('map').fitWorld();
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Set up geolocation
+    map.locate({setView: true, maxZoom: 16});
+
+    function onLocationFound(e) {
+        var radius = e.accuracy / 2;
+        L.marker(e.latlng).addTo(map)
+            .bindPopup("You are within " + radius + " meters from this point").openPopup();
+        L.circle(e.latlng, radius).addTo(map);
+    }
+
+    map.on('locationfound', onLocationFound);
+
+    function onLocationError(e) {
+        alert(e.message);
+    }
+
+    map.on('locationerror', onLocationError);
+
+    // Set up geocoder
+    var geocoder = L.Control.Geocoder.nominatim();
+    if (typeof URLSearchParams !== 'undefined' && location.search) {
+        var params = new URLSearchParams(location.search);
+        var geocoderString = params.get('geocoder');
+        if (geocoderString && L.Control.Geocoder[geocoderString]) {
+            geocoder = L.Control.Geocoder[geocoderString]();
+        } else if (geocoderString) {
+            console.warn('Unsupported geocoder', geocoderString);
+        }
+    }
+
+    var control = L.Control.geocoder({
+        query: '',
+        placeholder: 'Search for a location...',
+        defaultMarkGeocode: false
+    })
+    .on('markgeocode', function(e) {
+        var latlng = e.geocode.center;
+        var marker = L.marker(latlng, { draggable: true }).addTo(map)
+            .bindPopup(e.geocode.name).openPopup();
+
+        waypoints.push(latlng);
+        routingControl.setWaypoints(waypoints);
+
+        marker.on('dragend', function(event) {
+            var marker = event.target;
+            var position = marker.getLatLng();
+            updateWaypoint(marker, position);
+        });
+    })
+    .addTo(map);
+
+    // Set up routing
+    var waypoints = [];
+    var routingControl = L.Routing.control({
+        waypoints: waypoints,
+        createMarker: function() { return null; },
+        routeWhileDragging: true,
+        geocoder: geocoder
+    }).addTo(map);
+
+    function updateWaypoint(marker, position) {
+        var index = waypoints.findIndex(function(waypoint) {
+            return waypoint.lat === marker._latlng.lat && waypoint.lng === marker._latlng.lng;
+        });
+        if (index !== -1) {
+            waypoints[index] = position;
+            routingControl.setWaypoints(waypoints);
+        }
+    }
+
+    function saveRoute() {
+        var routeName = prompt("Enter route name:");
+        if (routeName) {
+            fetch('/save_route', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: routeName, waypoints: waypoints })
+            }).then(response => response.json())
+              .then(data => alert(data.message))
+              .catch(error => console.error('Error:', error));
+        }
+    }
+
+    document.getElementById('save-route-btn').addEventListener('click', saveRoute);
+</script>
+{% endblock %}

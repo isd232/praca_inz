@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Route: {{ route.name }}</h1>
+<div id="map" style="height: 500px;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13); // Default location
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var waypoints = {{ waypoints|tojson|safe }};
+    waypoints.forEach(function(waypoint) {
+        L.marker([waypoint[0], waypoint[1]]).addTo(map);
+    });
+
+    var polyline = L.polyline(waypoints, {color: 'blue'}).addTo(map);
+    map.fitBounds(polyline.getBounds());
+</script>
+{% endblock %}
