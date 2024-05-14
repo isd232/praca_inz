@@ -191,11 +191,13 @@ def save_route():
 
     return jsonify({'message': 'Route saved successfully'})
 
+
 @app.route('/routes')
 @login_required
 def routes():
     routes = Route.query.filter_by(user_id=current_user.id).all()
     return render_template('routes.html', routes=routes)
+
 
 @app.route('/route/<int:route_id>')
 @login_required
@@ -203,6 +205,7 @@ def route(route_id):
     route = Route.query.get_or_404(route_id)
     waypoints = json.loads(route.waypoints)
     return render_template('route.html', route=route, waypoints=waypoints)
+
 
 @app.route('/create_route')
 @login_required
@@ -264,14 +267,51 @@ def fuel_calculator():
         except Exception as e:
             flash(str(e), 'currency')
 
-    calculations = FuelCalculation.query.filter_by(user_id=current_user.id).order_by(FuelCalculation.created_at.desc()).limit(5).all()
-    return render_template('fuel_calculator.html', fuel_form=fuel_form, currency_form=currency_form, calculations=calculations, total_cost_pln=total_cost_pln, conversion_result=conversion_result)
+    calculations = FuelCalculation.query.filter_by(user_id=current_user.id).order_by(
+        FuelCalculation.created_at.desc()).limit(5).all()
+    return render_template('fuel_calculator.html', fuel_form=fuel_form, currency_form=currency_form,
+                           calculations=calculations, total_cost_pln=total_cost_pln,
+                           conversion_result=conversion_result)
+
+
+@app.route('/posts/delete/<int:id>')
+@login_required
+def delete_post(id):
+    post_to_delete = Posts.query.get_or_404(id)
+    id = current_user.id
+    if id == post_to_delete.poster.id or id == 13:
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+
+            # Return a message
+            flash("Blog Post Was Deleted!")
+
+            # Grab all the posts from the database
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template("posts.html", posts=posts)
+
+
+        except:
+            # Return an error message
+            flash("Whoops! There was a problem deleting post, try again...")
+
+            # Grab all the posts from the database
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template("posts.html", posts=posts)
+    else:
+        # Return a message
+        flash("You Aren't Authorized To Delete That Post!")
+
+        # Grab all the posts from the database
+        posts = Posts.query.order_by(Posts.date_posted)
+        return render_template("posts.html", posts=posts)
 
 
 @app.route('/posts')
 def posts():
     # Grab all the posts from the database
-    posts = Posts.query.order_by(Posts.date_posted)
+    posts = Posts.query.order_by(Posts.date_posted.desc()).all()
     return render_template("posts.html", posts=posts)
 
 
@@ -348,26 +388,32 @@ def get_current_date():
 
 # Delete User
 @app.route('/delete/<int:id>')
+@login_required
 def delete(id):
-    user_to_delete = Users.query.get_or_404(id)
-    name = None
-    form = UserForm()
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash("User Deleted Successfully!")
+    # Check logged in id vs. id to delete
+    if id == current_user.id:
+        user_to_delete = Users.query.get_or_404(id)
+        name = None
+        form = UserForm()
 
-        our_users = Users.query.order_by(Users.date_added)
-        return render_template("add_user.html",
-                               form=form,
-                               name=name,
-                               our_users=our_users)
-    except:
-        flash("There was a problem deleting user, try again")
-        return render_template("add_user.html",
-                               form=form,
-                               name=name,
-                               our_users=our_users)
+        try:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            flash("User Deleted Successfully!!")
+
+            our_users = Users.query.order_by(Users.date_added)
+            return render_template("add_user.html",
+                                   form=form,
+                                   name=name,
+                                   our_users=our_users)
+
+        except:
+            flash("Whoops! There was a problem deleting user, try again...")
+            return render_template("add_user.html",
+                                   form=form, name=name, our_users=our_users)
+    else:
+        flash("Sorry, you can't delete that user! ")
+        return redirect(url_for('dashboard'))
 
 
 # Update Database Record
