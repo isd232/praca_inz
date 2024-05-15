@@ -276,24 +276,42 @@ def fuel_calculator():
                            conversion_result=conversion_result)
 
 
-# Upvote Post Route
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
 def upvote_post(id):
     post = Posts.query.get_or_404(id)
-    post.upvotes += 1
+    existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == 'upvote':
+            db.session.delete(existing_vote)
+        else:
+            existing_vote.vote_type = 'upvote'
+    else:
+        vote = Votes(user_id=current_user.id, post_id=id, vote_type='upvote')
+        db.session.add(vote)
+
     db.session.commit()
-    return {'upvotes': post.upvotes, 'downvotes': post.downvotes, 'score': post.upvotes - post.downvotes}
+    return jsonify({'score': post.score()})
 
 
-# Downvote Post Route
 @app.route('/posts/downvote/<int:id>', methods=['POST'])
 @login_required
 def downvote_post(id):
     post = Posts.query.get_or_404(id)
-    post.downvotes += 1
+    existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
+
+    if existing_vote:
+        if existing_vote.vote_type == 'downvote':
+            db.session.delete(existing_vote)
+        else:
+            existing_vote.vote_type = 'downvote'
+    else:
+        vote = Votes(user_id=current_user.id, post_id=id, vote_type='downvote')
+        db.session.add(vote)
+
     db.session.commit()
-    return {'upvotes': post.upvotes, 'downvotes': post.downvotes, 'score': post.upvotes - post.downvotes}
+    return jsonify({'score': post.score()})
 
 
 @app.route('/posts/delete/<int:id>')
@@ -571,6 +589,17 @@ def name():
                            form=form)
 
 
+# Create a Votes Model
+class Votes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    vote_type = db.Column(db.String(10))  # 'upvote' or 'downvote'
+
+    user = db.relationship('Users', backref=db.backref('votes', lazy='dynamic'))
+    post = db.relationship('Posts', backref=db.backref('votes', lazy='dynamic'))
+
+
 # Create a Blog Post model
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -581,8 +610,11 @@ class Posts(db.Model):
     slug = db.Column(db.String(255))
     # Foreign Key To Link Users (refer to primary key to the user)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    upvotes = db.Column(db.Integer, default=0)
-    downvotes = db.Column(db.Integer, default=0)
+
+    def score(self):
+        upvotes = Votes.query.filter_by(post_id=self.id, vote_type='upvote').count()
+        downvotes = Votes.query.filter_by(post_id=self.id, vote_type='downvote').count()
+        return upvotes - downvotes
 
 
 # Create Model

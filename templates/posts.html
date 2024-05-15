@@ -20,7 +20,7 @@
     <div>
         <button class="btn btn-sm btn-success" onclick="vote('upvote', {{ post.id }}, '{{ csrf_token() }}')">Upvote</button>
         <button class="btn btn-sm btn-danger" onclick="vote('downvote', {{ post.id }}, '{{ csrf_token() }}')">Downvote</button>
-        <span id="score-{{ post.id }}">Score: {{ post.upvotes or 0 - post.downvotes or 0 }}</span>
+        <span id="score-{{ post.id }}">Score: {{ post.score() }}</span>
     </div>
     <br/><br/>
     <a href="{{ url_for('post', id=post.id) }}" class="btn btn-outline-secondary btn-sm"> View Post</a>
