@@ -167,7 +167,7 @@ def dashboard():
 
 
 def get_exchange_rates():
-    api_key = 'e2e106a00f79a1794cceb807'  # Replace with your actual API key
+    api_key = 'e2e106a00f79a1794cceb807'
     url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/PLN"
     response = requests.get(url)
     data = response.json()
