@@ -559,6 +559,8 @@ class Posts(db.Model):
     slug = db.Column(db.String(255))
     # Foreign Key To Link Users (refer to primary key to the user)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    upvotes = db.Column(db.Integer, default=0)
+    downvotes = db.Column(db.Integer, default=0)
 
 
 # Create Model
