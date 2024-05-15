@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from datetime import date
+from flask_wtf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
@@ -43,6 +44,7 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+csrf = CSRFProtect(app)
 
 
 @login_manager.user_loader
@@ -272,6 +274,26 @@ def fuel_calculator():
     return render_template('fuel_calculator.html', fuel_form=fuel_form, currency_form=currency_form,
                            calculations=calculations, total_cost_pln=total_cost_pln,
                            conversion_result=conversion_result)
+
+
+# Upvote Post Route
+@app.route('/posts/upvote/<int:id>', methods=['POST'])
+@login_required
+def upvote_post(id):
+    post = Posts.query.get_or_404(id)
+    post.upvotes += 1
+    db.session.commit()
+    return {'upvotes': post.upvotes, 'downvotes': post.downvotes, 'score': post.upvotes - post.downvotes}
+
+
+# Downvote Post Route
+@app.route('/posts/downvote/<int:id>', methods=['POST'])
+@login_required
+def downvote_post(id):
+    post = Posts.query.get_or_404(id)
+    post.downvotes += 1
+    db.session.commit()
+    return {'upvotes': post.upvotes, 'downvotes': post.downvotes, 'score': post.upvotes - post.downvotes}
 
 
 @app.route('/posts/delete/<int:id>')

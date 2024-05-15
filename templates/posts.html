@@ -5,7 +5,7 @@
 {% for message in get_flashed_messages() %}
     <div class="alert alert-warning alert-dismissible fade show" role="alert">
         {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {% endfor %}
 
@@ -14,16 +14,23 @@
 <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
     <h2><a href="{{ url_for('post', id=post.id) }}">{{ post.title }}</a><br/></h2>
     <small>By: {{ post.poster.name }}<br/>
-    {{ post.date_posted }}</small><br/><br/>
+    {{ post.date_posted.strftime('%Y-%m-%d') }}</small><br/><br/>
 
-    {{ post.content | safe}}<br/><br/>
+    {{ post.content | safe }}<br/><br/>
+    <div>
+        <button class="btn btn-sm btn-success" onclick="vote('upvote', {{ post.id }}, '{{ csrf_token() }}')">Upvote</button>
+        <button class="btn btn-sm btn-danger" onclick="vote('downvote', {{ post.id }}, '{{ csrf_token() }}')">Downvote</button>
+        <span id="score-{{ post.id }}">Score: {{ post.upvotes or 0 - post.downvotes or 0 }}</span>
+    </div>
     <br/><br/>
     <a href="{{ url_for('post', id=post.id) }}" class="btn btn-outline-secondary btn-sm"> View Post</a>
 
     {% if post.poster_id == current_user.id or current_user.id == 13 %}
     <a href="{{ url_for('edit_post', id=post.id) }}" class="btn btn-outline-secondary btn-sm"> Edit Post</a>
-    <a href="{{ url_for('delete_post', id=post.id) }}" class="btn btn-outline-danger btn-sm"> Delete Post</a>
-
+    <form action="{{ url_for('delete_post', id=post.id) }}" method="post" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-danger btn-sm">Delete Post</button>
+    </form>
     {% endif %}
 
     <br/>
@@ -31,5 +38,19 @@
 <br/>
 {% endfor %}
 
+<script>
+function vote(type, postId, csrfToken) {
+    fetch(`/posts/${type}/${postId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        }
+    }).then(response => response.json())
+      .then(data => {
+          document.getElementById(`score-${postId}`).innerText = `Score: ${data.score}`;
+      });
+}
+</script>
 
 {% endblock %}
