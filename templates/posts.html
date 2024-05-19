@@ -49,6 +49,9 @@ function vote(type, postId, csrfToken) {
     }).then(response => response.json())
       .then(data => {
           document.getElementById(`score-${postId}`).innerText = `Score: ${data.score}`;
+          alert(data.message);
+      }).catch(error => {
+          alert("Please Log In to Vote...");
       });
 }
 </script>

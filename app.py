@@ -278,6 +278,7 @@ def fuel_calculator():
 
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
+@csrf.exempt
 def upvote_post(id):
     post = Posts.query.get_or_404(id)
     existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
@@ -292,11 +293,12 @@ def upvote_post(id):
         db.session.add(vote)
 
     db.session.commit()
-    return jsonify({'score': post.score()})
+    return jsonify({'score': post.score(), 'message': 'Upvoted!'})
 
 
 @app.route('/posts/downvote/<int:id>', methods=['POST'])
 @login_required
+@csrf.exempt
 def downvote_post(id):
     post = Posts.query.get_or_404(id)
     existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
@@ -311,7 +313,7 @@ def downvote_post(id):
         db.session.add(vote)
 
     db.session.commit()
-    return jsonify({'score': post.score()})
+    return jsonify({'score': post.score(), 'message': 'Downvoted!'})
 
 
 @app.route('/posts/delete/<int:id>')
