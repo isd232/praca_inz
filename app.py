@@ -1,11 +1,10 @@
 from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import date
 from flask_wtf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm, CurrencyForm
 from models import Users, FuelCalculation, Posts, Votes, db
 from flask_ckeditor import CKEditor
@@ -62,7 +61,7 @@ def base():
 @login_required
 def admin():
     id = current_user.id
-    if id == 12:
+    if id == 13:
         return render_template("admin.html")
     else:
         flash("Sorry you must be the Admin to access admin page...")
@@ -241,7 +240,6 @@ def fuel_calculator():
 
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
-@csrf.exempt
 def upvote_post(id):
     post = Posts.query.get_or_404(id)
     existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
@@ -249,19 +247,20 @@ def upvote_post(id):
     if existing_vote:
         if existing_vote.vote_type == 'upvote':
             db.session.delete(existing_vote)
+            flash('Vote removed.', 'info')
         else:
             existing_vote.vote_type = 'upvote'
+            flash('Vote changed to upvote.', 'success')
     else:
         vote = Votes(user_id=current_user.id, post_id=id, vote_type='upvote')
         db.session.add(vote)
+        flash('Upvoted!', 'success')
 
     db.session.commit()
-    return jsonify({'score': post.score(), 'message': 'Upvoted!'})
-
+    return redirect(url_for('posts'))
 
 @app.route('/posts/downvote/<int:id>', methods=['POST'])
 @login_required
-@csrf.exempt
 def downvote_post(id):
     post = Posts.query.get_or_404(id)
     existing_vote = Votes.query.filter_by(user_id=current_user.id, post_id=id).first()
@@ -269,14 +268,18 @@ def downvote_post(id):
     if existing_vote:
         if existing_vote.vote_type == 'downvote':
             db.session.delete(existing_vote)
+            flash('Downvote removed.', 'info')
         else:
             existing_vote.vote_type = 'downvote'
+            flash('Vote changed to downvote.', 'success')
     else:
         vote = Votes(user_id=current_user.id, post_id=id, vote_type='downvote')
         db.session.add(vote)
+        flash('Downvoted!', 'success')
 
     db.session.commit()
-    return jsonify({'score': post.score(), 'message': 'Downvoted!'})
+    return redirect(url_for('posts'))
+
 
 
 @app.route('/posts/delete/<int:id>')

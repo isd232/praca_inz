@@ -18,10 +18,23 @@
 
     {{ post.content | safe }}<br/><br/>
     <div>
-        <button class="btn btn-sm btn-success" onclick="vote('upvote', {{ post.id }}, '{{ csrf_token() }}')">Upvote</button>
-        <button class="btn btn-sm btn-danger" onclick="vote('downvote', {{ post.id }}, '{{ csrf_token() }}')">Downvote</button>
-        <span id="score-{{ post.id }}">Score: {{ post.score() }}</span>
-    </div>
+    {% if current_user.is_authenticated %}
+    <!-- Upvote form -->
+    <form action="{{ url_for('upvote_post', id=post.id) }}" method="POST" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-success">Upvote</button>
+    </form>
+    <!-- Downvote form -->
+    <form action="{{ url_for('downvote_post', id=post.id) }}" method="POST" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-danger">Downvote</button>
+    </form>
+    {% else %}
+    <button type="button" class="btn btn-sm btn-success" onclick="alert('Please log in to vote');">Upvote</button>
+    <button type="button" class="btn btn-sm btn-danger" onclick="alert('Please log in to vote');">Downvote</button>
+    {% endif %}
+    <span>Score: {{ post.score() }}</span>
+</div>
     <br/><br/>
     <a href="{{ url_for('post', id=post.id) }}" class="btn btn-outline-secondary btn-sm"> View Post</a>
 
@@ -37,23 +50,5 @@
 </div>
 <br/>
 {% endfor %}
-
-<script>
-function vote(type, postId, csrfToken) {
-    fetch(`/posts/${type}/${postId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-        }
-    }).then(response => response.json())
-      .then(data => {
-          document.getElementById(`score-${postId}`).innerText = `Score: ${data.score}`;
-          alert(data.message);
-      }).catch(error => {
-          alert("Please Log In to Vote...");
-      });
-}
-</script>
 
 {% endblock %}
