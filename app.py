@@ -1,43 +1,41 @@
 from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime
 from datetime import date
 from flask_wtf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm, CurrencyForm
+from models import Users, FuelCalculation, Posts, Votes, db
 from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
 import json
 
-# Ended on 38 start on 39
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
-
 
 # Create a Flask Instance
 app = Flask(__name__)
 # Add CKEditor
 ckeditor = CKEditor(app)
-# Add Database
-# Old SQLite DB
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
+# Add Database
 # New MySQL DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/users'
+
 # Secret Key
 app.config['SECRET_KEY'] = "secretkey"
-# Initialize The Database
 
 UPLOAD_FOLDER = 'static/images/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-db = SQLAlchemy(app)
+# Initialize The Database
+db.init_app(app)
+
 migrate = Migrate(app, db)
 
 # Flask_Login Stuff
@@ -178,41 +176,6 @@ def get_exchange_rates():
         raise Exception(f"API error: {data.get('error-type', 'Unknown error')}")
 
     return data['conversion_rates']
-
-
-@app.route('/save_route', methods=['POST'])
-@login_required
-def save_route():
-    data = request.get_json()
-    route_name = data.get('name')
-    waypoints = json.dumps(data.get('waypoints'))
-
-    new_route = Route(user_id=current_user.id, name=route_name, waypoints=waypoints)
-    db.session.add(new_route)
-    db.session.commit()
-
-    return jsonify({'message': 'Route saved successfully'})
-
-
-@app.route('/routes')
-@login_required
-def routes():
-    routes = Route.query.filter_by(user_id=current_user.id).all()
-    return render_template('routes.html', routes=routes)
-
-
-@app.route('/route/<int:route_id>')
-@login_required
-def route(route_id):
-    route = Route.query.get_or_404(route_id)
-    waypoints = json.loads(route.waypoints)
-    return render_template('route.html', route=route, waypoints=waypoints)
-
-
-@app.route('/create_route')
-@login_required
-def create_route():
-    return render_template('create_route.html')
 
 
 # Create Fuel Calculator Page
@@ -591,90 +554,9 @@ def name():
                            form=form)
 
 
-# Create a Votes Model
-class Votes(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
-    vote_type = db.Column(db.String(10))  # 'upvote' or 'downvote'
-
-    user = db.relationship('Users', backref=db.backref('votes', lazy='dynamic'))
-    post = db.relationship('Posts', backref=db.backref('votes', lazy='dynamic'))
-
-
-# Create a Blog Post model
-class Posts(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255))
-    content = db.Column(db.Text)
-    # author = db.Column(db.String(255))
-    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
-    slug = db.Column(db.String(255))
-    # Foreign Key To Link Users (refer to primary key to the user)
-    poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    def score(self):
-        upvotes = Votes.query.filter_by(post_id=self.id, vote_type='upvote').count()
-        downvotes = Votes.query.filter_by(post_id=self.id, vote_type='downvote').count()
-        return upvotes - downvotes
-
-
-# Create Model
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(120), nullable=False, unique=True)
-    about_author = db.Column(db.Text(), nullable=True)
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    profile_pic = db.Column(db.String(500), nullable=True)
-    # Password Hashing
-    password_hash = db.Column(db.String(128))
-    # User Can Have Many Posts
-    posts = db.relationship('Posts', backref='poster')
-    routes = db.relationship('Route', backref='user', lazy=True)
-
-    @property
-    def password(self):
-        raise AttributeError('password is not readable attribute!')
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    # Create A String
-    def __repr__(self):
-        return '<Name %r>' % self.name
-
-
-# Create Fuel Consumption Model
-class FuelCalculation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    distance = db.Column(db.Float, nullable=False)
-    fuel_efficiency = db.Column(db.Float, nullable=False)
-    fuel_price = db.Column(db.Float, nullable=False)
-    currency = db.Column(db.String(10), nullable=False)
-    total_cost = db.Column(db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<FuelCalculation {self.distance} km, {self.fuel_efficiency} L/100km, {self.fuel_price} {self.currency}>'
-
-
-class Route(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    waypoints = db.Column(db.Text, nullable=False)
-
-
 # Check if the executed file is the main program and not a module imported elsewhere
 if __name__ == '__main__':
     # Set Flask configuration to development mode explicitly
     app.config['ENV'] = 'development'
     app.config['DEBUG'] = True
-    app.run()  # Start the Flask application
+    app.run()
