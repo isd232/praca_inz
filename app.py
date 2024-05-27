@@ -11,7 +11,6 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
-import json
 
 
 # export FLASK_ENV=development
@@ -42,6 +41,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
+
+app.config['ORS_KEY'] = '5b3ce3597851110001cf624890a6fa2d528e4d4c950cbe69bd7cd863'  # Add your ORS API key here
 
 
 @login_manager.user_loader
@@ -259,6 +260,7 @@ def upvote_post(id):
     db.session.commit()
     return redirect(url_for('posts'))
 
+
 @app.route('/posts/downvote/<int:id>', methods=['POST'])
 @login_required
 def downvote_post(id):
@@ -279,7 +281,6 @@ def downvote_post(id):
 
     db.session.commit()
     return redirect(url_for('posts'))
-
 
 
 @app.route('/posts/delete/<int:id>')
