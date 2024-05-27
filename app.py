@@ -239,6 +239,12 @@ def fuel_calculator():
                            conversion_result=conversion_result)
 
 
+@app.route('/map')
+def map_view():
+    return render_template('map.html')
+
+
+
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
 def upvote_post(id):

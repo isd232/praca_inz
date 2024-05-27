@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Interactive Map</h1>
+<div id="map" style="height: 600px;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize the map
+var map = L.map('map').setView([51.505, -0.09], 13);
+
+// Add the OSM tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+var searchPolygon = null;
+var searchMarker = null;
+var markers = [];
+
+// Function to add a removable marker
+function addRemovableMarker(latlng, popupText) {
+    var marker = L.marker(latlng).addTo(map);
+    marker.bindPopup(popupText + '<br><button onclick="removeMarker(' + markers.length + ')">Remove</button>').openPopup();
+    markers.push(marker);
+}
+
+// Remove a marker by index
+function removeMarker(index) {
+    if (markers[index]) {
+        map.removeLayer(markers[index]);
+        markers[index] = null; // Optional: Remove this line if you want to keep the index unchanged
+    }
+}
+
+// Search for places
+var searchControl = L.Control.geocoder({
+    defaultMarkGeocode: false
+})
+    .on('markgeocode', function(e) {
+        if (searchPolygon) {
+            map.removeLayer(searchPolygon);
+        }
+        if (searchMarker) {
+            map.removeLayer(searchMarker);
+        }
+
+        var bbox = e.geocode.bbox;
+        searchPolygon = L.polygon([
+            [bbox.getSouthEast().lat, bbox.getSouthEast().lng],
+            [bbox.getNorthEast().lat, bbox.getNorthEast().lng],
+            [bbox.getNorthWest().lat, bbox.getNorthWest().lng],
+            [bbox.getSouthWest().lat, bbox.getSouthWest().lng]
+        ]).addTo(map);
+        map.fitBounds(searchPolygon.getBounds());
+
+        addRemovableMarker(e.geocode.center, e.geocode.name);
+    })
+    .addTo(map);
+
+// Locate the current position of the user
+function locateUser() {
+    map.locate({setView: true, maxZoom: 16});
+}
+
+function onLocationFound(e) {
+    var radius = e.accuracy / 2;
+    var marker = L.marker(e.latlng).addTo(map)
+        .bindPopup("You are within " + radius + " meters from this point<br><button onclick='removeMarker(" + markers.length + ")'>Remove</button>")
+        .openPopup();
+    markers.push(marker);
+    L.circle(e.latlng, radius).addTo(map);
+}
+
+function onLocationError(e) {
+    alert(e.message);
+}
+
+map.on('locationfound', onLocationFound);
+map.on('locationerror', onLocationError);
+
+// Add a custom control to show the user's location
+L.Control.ShowLocation = L.Control.extend({
+    onAdd: function(map) {
+        var btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
+        btn.innerHTML = '<img src="{{ url_for('static', filename='images/location_icon.png') }}" alt="Show Location" style="width: 20px; height: 20px;">';
+        btn.style.backgroundColor = 'white';
+        btn.style.width = '30px';
+        btn.style.height = '30px';
+        btn.title = 'Show My Location';
+
+        btn.onclick = function() {
+            locateUser();
+        };
+
+        return btn;
+    },
+
+    onRemove: function(map) {
+        // Nothing to do here
+    }
+});
+
+L.control.showLocation = function(opts) {
+    return new L.Control.ShowLocation(opts);
+}
+
+L.control.showLocation({ position: 'topright' }).addTo(map);
+
+// Add a custom control to clear the search results and markers
+L.Control.ClearSearch = L.Control.extend({
+    onAdd: function(map) {
+        var btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
+        btn.innerHTML = 'X';
+        btn.style.backgroundColor = 'white';
+        btn.style.width = '30px';
+        btn.style.height = '30px';
+        btn.title = 'Clear Search Results';
+
+        btn.onclick = function() {
+            if (searchPolygon) {
+                map.removeLayer(searchPolygon);
+                searchPolygon = null;
+            }
+            if (searchMarker) {
+                map.removeLayer(searchMarker);
+                searchMarker = null;
+            }
+            markers.forEach(function(marker, index) {
+                if (marker) {
+                    map.removeLayer(marker);
+                    markers[index] = null; // Optional: Remove this line if you want to keep the index unchanged
+                }
+            });
+        };
+
+        return btn;
+    },
+
+    onRemove: function(map) {
+        // Nothing to do here
+    }
+});
+
+L.control.clearSearch = function(opts) {
+    return new L.Control.ClearSearch(opts);
+}
+
+L.control.clearSearch({ position: 'topright' }).addTo(map);
+</script>
+{% endblock %}
