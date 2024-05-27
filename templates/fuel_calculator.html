@@ -1,107 +1,97 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="shadow p-3 mb-5 bg-body-tertiary rounded">
-    <h1>Fuel Consumption Calculator</h1>
-    <form method="POST" action="{{ url_for('fuel_calculator') }}">
-        {{ fuel_form.hidden_tag() }}
-        <div>
-            <label for="distance">Distance (km):</label>
-            {{ fuel_form.distance(id='distance', class_='form-control') }}
-            {% if fuel_form.distance.errors %}
+<div class="container">
+    <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
+        <h1>Fuel Consumption Calculator</h1>
+        <form method="POST" action="{{ url_for('fuel_calculator') }}">
+            {{ fuel_form.hidden_tag() }}
+            <div class="mb-3">
+                <label for="distance">Distance (km):</label>
+                {{ fuel_form.distance(id='distance', class_='form-control') }}
                 {% for error in fuel_form.distance.errors %}
-                    <span style="color: red;">{{ error }}</span>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            {% endif %}
-        </div>
-        <div>
-            <label for="fuel_efficiency">Fuel Efficiency (L/100km):</label>
-            {{ fuel_form.fuel_efficiency(id='fuel_efficiency', class_='form-control') }}
-            {% if fuel_form.fuel_efficiency.errors %}
+            </div>
+            <div class="mb-3">
+                <label for="fuel_efficiency">Fuel Efficiency (L/100km):</label>
+                {{ fuel_form.fuel_efficiency(id='fuel_efficiency', class_='form-control') }}
                 {% for error in fuel_form.fuel_efficiency.errors %}
-                    <span style="color: red;">{{ error }}</span>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            {% endif %}
-        </div>
-        <div>
-            <label for="fuel_price">Fuel Price (PLN):</label>
-            {{ fuel_form.fuel_price(id='fuel_price', class_='form-control') }}
-            {% if fuel_form.fuel_price.errors %}
+            </div>
+            <div class="mb-3">
+                <label for="fuel_price">Fuel Price (PLN):</label>
+                {{ fuel_form.fuel_price(id='fuel_price', class_='form-control') }}
                 {% for error in fuel_form.fuel_price.errors %}
-                    <span style="color: red;">{{ error }}</span>
+                    <span class="text-danger">{{ error }}</span>
                 {% endfor %}
-            {% endif %}
-        </div>
-        <br>
-        <div>
+            </div>
             <button type="submit" class="btn btn-primary" name="fuel_submit">Calculate</button>
-        </div>
-    </form>
+        </form>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                {% if category == 'fuel' %}
-                    <div class="alert alert-info">{{ message }}</div>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    {% if total_cost_pln %}
-        <h3>Total Cost: {{ total_cost_pln }} PLN</h3>
-    {% endif %}
-    <br/>
-    <br/>
-    <h1>Currency Converter</h1>
-    <form method="POST" action="{{ url_for('fuel_calculator') }}">
-        {{ currency_form.hidden_tag() }}
-        <div>
-            <label for="amount">Amount:</label>
-            {{ currency_form.amount(id='amount', class_='form-control') }}
-            {% if currency_form.amount.errors %}
-                {% for error in currency_form.amount.errors %}
-                    <span style="color: red;">{{ error }}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'fuel' %}
+                        <div class="alert alert-info mt-3">{{ message }}</div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
-        </div>
-        <div>
-            <label for="from_currency">From:</label>
-            {{ currency_form.from_currency(id='from_currency', class_='form-control') }}
-        </div>
-        <div>
-            <label for="to_currency">To:</label>
-            {{ currency_form.to_currency(id='to_currency', class_='form-control') }}
-        </div>
-        <br>
-        <div>
+        {% endwith %}
+
+        {% if total_cost_pln %}
+            <h3>Total Cost: {{ total_cost_pln }} PLN</h3>
+        {% endif %}
+    </div>
+
+    <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
+        <h1>Currency Converter</h1>
+        <form method="POST" action="{{ url_for('fuel_calculator') }}">
+            {{ currency_form.hidden_tag() }}
+            <div class="mb-3">
+                <label for="amount">Amount:</label>
+                {{ currency_form.amount(id='amount', class_='form-control') }}
+                {% for error in currency_form.amount.errors %}
+                    <span class="text-danger">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                <label for="from_currency">From:</label>
+                {{ currency_form.from_currency(id='from_currency', class_='form-control') }}
+            </div>
+            <div class="mb-3">
+                <label for="to_currency">To:</label>
+                {{ currency_form.to_currency(id='to_currency', class_='form-control') }}
+            </div>
             <button type="submit" class="btn btn-primary" name="currency_submit">Convert</button>
-        </div>
-    </form>
-</div>
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'currency' %}
-                <div class="alert alert-info">{{ message }}</div>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'currency' %}
+                        <div class="alert alert-info mt-3">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+        {% endwith %}
 
-{% if conversion_result %}
-    <h3>Conversion Result: {{ conversion_result }}</h3>
-{% endif %}
+        {% if conversion_result %}
+            <h3>Conversion Result: {{ conversion_result }}</h3>
+        {% endif %}
 
-<h3>Last 5 Calculations:</h3>
-<ul>
-    {% for calc in calculations %}
-        <li>
-            {{ calc.distance }} km, {{ calc.fuel_efficiency }} L/100km,
-            {{ calc.fuel_price }} PLN per liter,
-            Total Cost: {{ calc.total_cost }} PLN,
-            calculated at {{ calc.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
-        </li>
-    {% endfor %}
-</ul>
+        <h3>Last 5 Calculations:</h3>
+        <ul>
+            {% for calc in calculations %}
+                <li>
+                    {{ calc.distance }} km, {{ calc.fuel_efficiency }} L/100km,
+                    {{ calc.fuel_price }} PLN per liter,
+                    Total Cost: {{ calc.total_cost }} PLN,
+                    calculated at {{ calc.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 {% endblock %}
