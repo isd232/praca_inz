@@ -63,12 +63,56 @@ def base():
 @app.route('/admin')
 @login_required
 def admin():
-    id = current_user.id
-    if id == 13:
-        return render_template("admin.html")
-    else:
-        flash("Sorry you must be the Admin to access admin page...")
+    if current_user.id != 13:
+        flash("Sorry, you must be the Admin to access the admin page.")
         return redirect(url_for('dashboard'))
+    return render_template("admin.html")
+
+
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    if current_user.id != 13:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('dashboard'))
+
+    users = Users.query.all()
+    return render_template('admin_users.html', users=users)
+
+
+@app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if current_user.id != 13:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('dashboard'))
+
+    user = Users.query.get_or_404(user_id)
+    form = UserForm(obj=user)
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.favorite_color = form.favorite_color.data  # Assuming the form and model have this field
+        db.session.commit()
+        flash('User updated successfully!', 'success')
+        return redirect(url_for('admin_users'))
+
+    return render_template('update.html', form=form, id=user.id, name_to_update=user)
+
+
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.id != 13:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('dashboard'))
+
+    user = Users.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully!', 'success')
+    return redirect(url_for('admin_users'))
+
 
 
 # Create Search Function
@@ -251,13 +295,15 @@ def fetch_travel_tips(location):
 @app.route('/travel_tips', methods=['GET', 'POST'])
 @login_required
 def travel_tips():
-    form = TravelTipsForm()
-    if form.validate_on_submit():
-        location = form.location.data
-        # Simulate fetching data or query from your database
-        tips = fetch_travel_tips(location)  # You need to implement this function
-        return render_template("travel_tips_results.html", tips=tips, location=location)
-    return render_template("travel_tips.html", form=form)
+    search_form = SearchForm()  # Assuming you have a SearchForm defined in your webforms.py
+    if search_form.validate_on_submit():
+        search_term = search_form.searched.data
+        locations = Location.query.filter(Location.name.ilike(f'%{search_term}%')).all()
+    else:
+        locations = Location.query.all()
+
+    return render_template('travel_tips.html', locations=locations, search_form=search_form)
+
 
 
 @app.route('/edit_travel_tip/<int:id>', methods=['GET', 'POST'])
@@ -279,7 +325,19 @@ def edit_travel_tip(id, SPECIAL_USER_ID=13):
     return render_template('edit_travel_tip.html', form=form)
 
 
+# Admin site for adding and editing location
+@app.route('/travel_tips_admin')
+@login_required
+def travel_tips_admin():
+    if current_user.id != 13:
+        flash("You are not authorized to access this page.")
+        return redirect(url_for('index'))
 
+    locations = Location.query.all()
+    return render_template('travel_tips_admin.html', locations=locations)
+
+
+# Add new location
 @app.route('/add_location', methods=['GET', 'POST'])
 @login_required
 def add_location():
@@ -298,6 +356,7 @@ def add_location():
     return render_template('add_location.html', form=form)
 
 
+# Edit location content
 @app.route('/edit_location/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_location(id):
@@ -316,11 +375,32 @@ def edit_location(id):
     return render_template('edit_location.html', form=form, location=location)
 
 
+# List all locations
 @app.route('/list_locations')
 @login_required
 def list_locations():
     locations = Location.query.all()  # Fetch all locations from the database
     return render_template('list_locations.html', locations=locations)
+
+# See specific location
+@app.route('/locations/<int:location_id>')
+def view_location(location_id):
+    location = Location.query.get_or_404(location_id)
+    return render_template('location_detail.html', location=location)
+
+
+@app.route('/delete_location/<int:id>', methods=['POST'])
+@login_required
+def delete_location(id):
+    if current_user.id != 13:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('travel_tips_admin'))
+
+    location = Location.query.get_or_404(id)
+    db.session.delete(location)
+    db.session.commit()
+    flash('Location successfully deleted.', 'success')
+    return redirect(url_for('travel_tips_admin'))
 
 
 
@@ -506,14 +586,14 @@ def delete(id):
             flash("User Deleted Successfully!!")
 
             our_users = Users.query.order_by(Users.date_added)
-            return render_template("add_user.html",
+            return render_template("add_users.html",
                                    form=form,
                                    name=name,
                                    our_users=our_users)
 
         except:
             flash("Whoops! There was a problem deleting user, try again...")
-            return render_template("add_user.html",
+            return render_template("add_users.html",
                                    form=form, name=name, our_users=our_users)
     else:
         flash("Sorry, you can't delete that user! ")
@@ -573,7 +653,7 @@ def add_user():
         form.password_hash = ''
         flash("User Added Successfully!")
     our_users = Users.query.order_by(Users.date_added)
-    return render_template("add_user.html",
+    return render_template("add_users.html",
                            form=form,
                            name=name,
                            our_users=our_users)
@@ -658,4 +738,4 @@ if __name__ == '__main__':
     # Set Flask configuration to development mode explicitly
     app.config['ENV'] = 'development'
     app.config['DEBUG'] = True
-    app.run()
+    app.run(debug=True)

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ location.name }}</h1>
+<div>
+    <p>{{ location.description|safe }}</p>
+</div>
+<a href="{{ url_for('travel_tips') }}">Back to Travel Tips</a>
+{% endblock %}
