@@ -29,7 +29,7 @@
                 <div class="card-body">
                     <h3 class="card-title">Post Section</h3>
                     <p class="card-text">Read other users posts or share your own thought and create a post!</p>
-                    <a href="{{ url_for('fuel_calculator') }}" class="btn btn-outline-primary">Posts</a>
+                    <a href="{{ url_for('posts') }}" class="btn btn-outline-primary">Posts</a>
                 </div>
             </div>
         </div>
@@ -45,18 +45,17 @@
     </div>
 </div>
 
-<!-- Featured Destinations Section -->
+<!-- Latest Blog Posts Section -->
 <div class="container mt-4">
-    <h2>Featured Destinations</h2>
+    <h2 class="text-center">Latest Blog Posts</h2>
     <div class="row">
-        {% for destination in destinations %}
+        {% for post in latest_posts %}
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
-                <img src="{{ url_for('static', filename='images/' + destination.image) }}" class="card-img-top" alt="{{ destination.name }}">
                 <div class="card-body">
-                    <h5 class="card-title">{{ destination.name }}</h5>
-                    <p class="card-text">{{ destination.description[:100] }}...</p>
-                    <a href="{{ url_for('destination_detail', id=destination.id) }}" class="btn btn-primary">Read More</a>
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text">{{ post.summary }}</p>
+                    <a href="{{ url_for('posts') }}" class="btn btn-primary">Read More</a>
                 </div>
             </div>
         </div>

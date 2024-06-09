@@ -411,6 +411,15 @@ def delete_location(id):
     return redirect(url_for('travel_tips_admin'))
 
 
+@app.route('/post/<int:post_id>')
+def post_detail(post_id):
+    post = Posts.query.get(post_id)
+    if not post:
+        abort(404)  # If no post is found, return a 404 Not Found error.
+
+    return render_template('post_detail.html', post=post)
+
+
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
 def upvote_post(id):
@@ -656,12 +665,12 @@ def add_user():
     return render_template("add_users.html", form=form)
 
 
-
 # Create a route decorator
 @app.route('/')
 def index():
-    first_name = "John"
-    return render_template("index.html", first_name=first_name)
+    latest_posts = Posts.query.order_by(Posts.date_posted.desc()).limit(3).all()
+    print(latest_posts)  # This will print the query result to your console
+    return render_template('index.html', latest_posts=latest_posts)
 
 
 # localhost:5000/user/john
