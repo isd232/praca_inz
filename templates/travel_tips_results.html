@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Travel Tips for {{ location }}</h1>
+{% if tips %}
+    <ul>
+        {% for tip in tips %}
+            <li>{{ tip.description }}  <!-- Assuming each 'tip' has a 'description' attribute -->
+            {% if current_user.id == tip.user_id or current_user.id == SPECIAL_USER_ID %}
+                <a href="{{ url_for('edit_travel_tip', id=tip.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+            {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No travel tips available for this location. Please try another search.</p>
+{% endif %}
+<a href="{{ url_for('travel_tips') }}" class="btn btn-primary">Search Again</a>
+{% endblock %}

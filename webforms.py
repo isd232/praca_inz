@@ -5,6 +5,19 @@ from wtforms.validators import DataRequired, EqualTo
 from flask_ckeditor import CKEditorField
 
 
+
+class LocationForm(FlaskForm):
+    name = StringField('Location Name', validators=[DataRequired()])
+    description = CKEditorField('Location Description', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+# Create Search location form
+class TravelTipsForm(FlaskForm):
+    location = StringField("Enter a location", validators=[DataRequired()])
+    submit = SubmitField("Search")
+
+
 # Create Fuel Calc Form
 class FuelForm(FlaskForm):
     distance = FloatField('Distance in kilometers', validators=[DataRequired()])

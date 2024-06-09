@@ -6,6 +6,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 db = SQLAlchemy()
 
 
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+
+class TravelTip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    location = db.Column(db.String(255), nullable=False)
+    tips = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('Users', backref='travel_tips')
+
+
 # Create a Votes Model
 class Votes(db.Model):
     id = db.Column(db.Integer, primary_key=True)

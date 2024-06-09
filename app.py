@@ -5,12 +5,14 @@ from flask_wtf import CSRFProtect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm, CurrencyForm
-from models import Users, FuelCalculation, Posts, Votes, db
+from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm, CurrencyForm, \
+    TravelTipsForm, LocationForm
+from models import Users, FuelCalculation, Posts, Votes, db, TravelTip, Location
 from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
+import folium
 
 
 # export FLASK_ENV=development
@@ -236,14 +238,101 @@ def fuel_calculator():
         FuelCalculation.created_at.desc()).limit(5).all()
     return render_template('fuel_calculator.html', fuel_form=fuel_form, currency_form=currency_form,
                            calculations=calculations, total_cost_pln=total_cost_pln,
+
                            conversion_result=conversion_result)
+
+def fetch_travel_tips(location):
+    # This is a placeholder. You can implement database queries or API calls here.
+    # Example:
+    tips = ["Pack light", "Stay hydrated", "Try local food"]
+    return tips
+
+
+@app.route('/travel_tips', methods=['GET', 'POST'])
+@login_required
+def travel_tips():
+    form = TravelTipsForm()
+    if form.validate_on_submit():
+        location = form.location.data
+        # Simulate fetching data or query from your database
+        tips = fetch_travel_tips(location)  # You need to implement this function
+        return render_template("travel_tips_results.html", tips=tips, location=location)
+    return render_template("travel_tips.html", form=form)
+
+
+@app.route('/edit_travel_tip/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_travel_tip(id, SPECIAL_USER_ID=13):
+    tip = TravelTip.query.get_or_404(id)
+    if current_user.id != tip.user_id and current_user.id != SPECIAL_USER_ID:
+        flash("You are not authorized to edit this tip.")
+        return redirect(url_for('travel_tips_results', location=tip.location))
+
+    form = TravelTipsForm(obj=tip)
+    if form.validate_on_submit():
+        tip.location = form.location.data
+        tip.tips = form.tips.data
+        db.session.commit()
+        flash("Travel Tip Updated!")
+        return redirect(url_for('travel_tips_results', location=tip.location))
+
+    return render_template('edit_travel_tip.html', form=form)
+
+
+
+@app.route('/add_location', methods=['GET', 'POST'])
+@login_required
+def add_location():
+    if current_user.id != 13:
+        flash('You are not authorized to access this page.')
+        return redirect(url_for('index'))
+
+    form = LocationForm()
+    if form.validate_on_submit():
+        location = Location(name=form.name.data, description=form.description.data, created_by=current_user.id)
+        db.session.add(location)
+        db.session.commit()
+        flash('Location added successfully!')
+        return redirect(url_for('list_locations'))  # This redirects to the list_locations route after successful submission
+
+    return render_template('add_location.html', form=form)
+
+
+@app.route('/edit_location/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_location(id):
+    location = Location.query.get_or_404(id)
+    if current_user.id != location.created_by and current_user.id != 13:
+        flash('You are not authorized to edit this location.')
+        return redirect(url_for('list_locations'))
+
+    form = LocationForm(obj=location)
+    if form.validate_on_submit():
+        location.name = form.name.data
+        location.description = form.description.data
+        db.session.commit()
+        flash('Location updated successfully!')
+        return redirect(url_for('list_locations'))
+    return render_template('edit_location.html', form=form, location=location)
+
+
+@app.route('/list_locations')
+@login_required
+def list_locations():
+    locations = Location.query.all()  # Fetch all locations from the database
+    return render_template('list_locations.html', locations=locations)
+
 
 
 @app.route('/map')
 def map_view():
+    # Create a map centered at some default coordinates
+    folium_map = folium.Map(location=[51.5074, -0.1278], zoom_start=10)
+
+    # Save the map as an HTML file in the templates folder
+    folium_map.save('templates/folium_map.html')
+
     return render_template('map.html')
-
-
 
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required

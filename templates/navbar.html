@@ -48,6 +48,11 @@
           <a class="nav-link active" aria-current="page" href="{{ url_for('posts') }}">Posts</a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{{ url_for('travel_tips') }}">Travel Tips</a>
+        </li>
+
+
       </ul>
       <form method="POST" action="{{ url_for('search') }}" class="d-flex">
         {{ form.hidden_tag() }}
