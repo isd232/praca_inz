@@ -47,3 +47,36 @@ h1 {
     flex-grow: 1;
     max-width: calc(100% - 55px); /* Adjust to ensure it fits next to vote-container */
 }
+
+.ui-autocomplete {
+    position: absolute;
+    z-index: 1050;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #ddd;
+    background-color: white;
+    width: 300px; /* or 100% to match input width */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    list-style-type: none; /* Remove bullet points */
+    padding-left: 0; /* Remove padding */
+}
+
+.ui-autocomplete .ui-menu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 24px;
+    border-bottom: 1px solid #eee; /* Optional: adds a subtle line between items */
+}
+
+.ui-autocomplete .ui-menu-item:last-child {
+    border-bottom: none; /* Prevents a border on the last item */
+}
+
+.ui-state-focus,
+.ui-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+

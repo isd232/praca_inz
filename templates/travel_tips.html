@@ -32,13 +32,27 @@
 <script>
 $(function() {
     $("#searchInput").autocomplete({
-        source: "{{ url_for('autocomplete') }}",
-        minLength: 2,  // Minimum length of query to trigger autocomplete
-        select: function(event, ui) {
-            $("#searchInput").val(ui.item.value);
+        source: function(request, response) {
+            $.getJSON("{{ url_for('autocomplete') }}", { term: request.term }, function(data) {
+                response($.map(data, function(item) {
+                    var highlighted = item.replace(new RegExp("(" + $.ui.autocomplete.escapeRegex(request.term) + ")", "gi"), "<strong>$1</strong>");
+                    return { label: highlighted, value: item };
+                }));
+            });
+        },
+        minLength: 2,
+        open: function() {
+            $(".ui-autocomplete").css("width", $("#searchInput").outerWidth());
         }
-    });
+    }).autocomplete("instance")._renderItem = function(ul, item) {
+        return $("<li>")
+            .append("<div>" + item.label + "</div>")
+            .appendTo(ul);
+    };
 });
+
+
+
 </script>
 
 {% endblock %}
