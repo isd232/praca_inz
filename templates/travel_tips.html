@@ -1,20 +1,44 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Travel Tips</h1>
-<form method="POST">
-    {{ search_form.hidden_tag() }}
-    {{ search_form.searched.label }} {{ search_form.searched(size=20) }}
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
+<div class="container mt-3">
+    <h1 class="text-center mb-4">Travel Tips</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form class="input-group mb-3" method="POST">
+                {{ form.hidden_tag() }}
+                <input type="text" class="form-control" id="searchInput" name="searched" placeholder="Search locations...">
 
-{% if locations %}
-    <ul>
-        {% for location in locations %}
-        <li><a href="{{ url_for('view_location', location_id=location.id) }}">{{ location.name }}</a></li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No locations found.</p>
-{% endif %}
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    {% if locations %}
+        <div class="list-group">
+            {% for location in locations %}
+            <a href="{{ url_for('view_location', location_id=location.id) }}" class="list-group-item list-group-item-action">
+                {{ location.name }}
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center">No locations found. Try a different search!</p>
+    {% endif %}
+</div>
+
+<script>
+$(function() {
+    $("#searchInput").autocomplete({
+        source: "{{ url_for('autocomplete') }}",
+        minLength: 2,  // Minimum length of query to trigger autocomplete
+        select: function(event, ui) {
+            $("#searchInput").val(ui.item.value);
+        }
+    });
+});
+</script>
+
 {% endblock %}

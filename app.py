@@ -47,6 +47,14 @@ csrf = CSRFProtect(app)
 app.config['ORS_KEY'] = '5b3ce3597851110001cf624890a6fa2d528e4d4c950cbe69bd7cd863'  # Add your ORS API key here
 
 
+@app.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    search = request.args.get('term')
+    location_query = Location.query.filter(Location.name.ilike(f'%{search}%')).all()
+    location_list = [location.name for location in location_query]
+    return jsonify(location_list)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))
@@ -403,17 +411,6 @@ def delete_location(id):
     return redirect(url_for('travel_tips_admin'))
 
 
-
-@app.route('/map')
-def map_view():
-    # Create a map centered at some default coordinates
-    folium_map = folium.Map(location=[51.5074, -0.1278], zoom_start=10)
-
-    # Save the map as an HTML file in the templates folder
-    folium_map.save('templates/folium_map.html')
-
-    return render_template('map.html')
-
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
 @login_required
 def upvote_post(id):
@@ -575,7 +572,7 @@ def get_current_date():
 @login_required
 def delete(id):
     # Check logged in id vs. id to delete
-    if id == current_user.id:
+    if id == current_user.id or current_user.id == 13:
         user_to_delete = Users.query.get_or_404(id)
         name = None
         form = UserForm()
@@ -633,30 +630,31 @@ def update(id):
 # Add User
 @app.route('/user/add', methods=['GET', 'POST'])
 def add_user():
-    name = None
     form = UserForm()
     if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        if user is None:
-            # Hash password
+        user_by_email = Users.query.filter_by(email=form.email.data).first()
+        user_by_username = Users.query.filter_by(username=form.username.data).first()
+
+        if user_by_email:
+            flash('Email already in use. Please use a different email.', 'error')
+        elif user_by_username:
+            flash('Username already taken. Please choose a different username.', 'error')
+        else:
             hashed_pw = generate_password_hash(form.password_hash.data, method='pbkdf2:sha256')
-            user = Users(username=form.username.data,
-                         name=form.name.data,
-                         email=form.email.data,
-                         password_hash=hashed_pw)
+            user = Users(
+                username=form.username.data,
+                name=form.name.data,
+                email=form.email.data,
+                about_author=form.about_author.data,
+                password_hash=hashed_pw
+            )
             db.session.add(user)
             db.session.commit()
-        name = form.name.data
-        form.name.data = ''
-        form.username.data = ''
-        form.email.data = ''
-        form.password_hash = ''
-        flash("User Added Successfully!")
-    our_users = Users.query.order_by(Users.date_added)
-    return render_template("add_users.html",
-                           form=form,
-                           name=name,
-                           our_users=our_users)
+            flash("User added successfully!")
+            return redirect(url_for('add_user'))  # Redirect to prevent duplicate submissions
+
+    return render_template("add_users.html", form=form)
+
 
 
 # Create a route decorator

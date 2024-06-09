@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 {% for message in get_flashed_messages() %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ message }}
@@ -8,35 +9,54 @@
     </div>
 {% endfor %}
 
-<h1>Update User...</h1>
-<br/>
-<div class="shadow p-3 mb-5 bg-body-tertiary rounded">
-    <form action="{{ url_for('edit_user', user_id=id) if current_user.id == 13 else url_for('update', id=current_user.id) }}" method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+{% if id == current_user.id or current_user.id == 13 %}
 
-        {{ form.name.label(class="form-label") }}
-        {{ form.name(class="form-control", value=name_to_update.name) }}
-        <br/>
+    <h1>Update User...</h1>
+    <br/>
+    <div class="shadow p-3 mb-5 bg-body-tertiary rounded">
+        <form action="/update/{{ name_to_update.id }}" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
 
-        {{ form.username.label(class="form-label") }}
-        {{ form.username(class="form-control", value=name_to_update.username) }}
-        <br/>
+            {{ form.name.label(
+            class="form-label") }}
 
-        {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", value=name_to_update.email) }}
-        <br/>
+            {{ form.name(
+            class="form-control", value=name_to_update.name) }}
+            <br/>
 
-        {{ form.favorite_color.label(class="form-label") }}
-        {{ form.favorite_color(class="form-control", value=name_to_update.favorite_color) }}
-        <br/>
+            {{ form.username.label(
+            class="form-label") }}
 
-        {{ form.submit(class="btn btn-secondary") }}
+            {{ form.username(
+            class="form-control", value=name_to_update.username) }}
+            <br/>
 
-        {% if current_user.id == 13 %}
-        <a href="{{ url_for('delete_user', user_id=id) }}" class="btn btn-danger">Delete</a>
-        {% endif %}
+            {{ form.email.label(
+            class="form-label") }}
 
-    </form>
-</div>
+            {{ form.email(
+            class="form-control", value=name_to_update.email) }}
+            <br/>
+
+
+            {{ form.submit(class="btn btn-secondary") }}
+
+            <a href="{{ url_for('delete', id=id) }}" class="btn btn-danger">Delete</a>
+
+        </form>
+    </div>
 <br/><br/><br/>
+
+{% else %}
+
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        Sorry! You Can't Edit This User...
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <h2>Access Denied!</h2>
+    <p>Sorry, you cannot access this user profile...</p>
+
+{% endif %}
+
 {% endblock %}

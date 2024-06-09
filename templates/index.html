@@ -1,24 +1,67 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Home Page gowno</h1>
 
-    <div class="container mt-4">
-        <h2>Featured Destinations</h2>
-        <div class="row">
-            {% for destination in destinations %}
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
-                    <img src="{{ url_for('static', filename='images/' + destination.image) }}" class="card-img-top" alt="{{ destination.name }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ destination.name }}</h5>
-                        <p class="card-text">{{ destination.description[:100] }}...</p>
-                        <a href="{{ url_for('destination_detail', id=destination.id) }}" class="btn btn-primary">Read More</a>
-                    </div>
+<!-- Hero Section -->
+<div class="container mt-4">
+    <div class="jumbotron bg-light p-5 rounded-lg text-center">
+        <h1 class="display-4">Welcome to Travel Forum!</h1>
+        <p class="lead">Explore insightful travel tips and the latest updates on your favorite destinations.</p>
+        <a class="btn btn-primary btn-lg" href="#services" role="button">Discover More</a>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="container" id="services">
+    <h2 class="text-center mt-5">Our Services</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Fuel Calculator</h3>
+                    <p class="card-text">Check how much the trip will cost you! It includes currency converter as well!</p>
+                    <a href="{{ url_for('fuel_calculator') }}" class="btn btn-outline-primary">Learn More</a>
                 </div>
             </div>
-            {% endfor %}
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Post Section</h3>
+                    <p class="card-text">Read other users posts or share your own thought and create a post!</p>
+                    <a href="{{ url_for('fuel_calculator') }}" class="btn btn-outline-primary">Posts</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Travel Tips</h3>
+                    <p class="card-text">Are you planning to visit a specific country and looking for some tips? You can find it here!</p>
+                    <a href="{{ url_for('travel_tips') }}" class="btn btn-outline-primary">Explore</a>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
+<!-- Featured Destinations Section -->
+<div class="container mt-4">
+    <h2>Featured Destinations</h2>
+    <div class="row">
+        {% for destination in destinations %}
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="{{ url_for('static', filename='images/' + destination.image) }}" class="card-img-top" alt="{{ destination.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ destination.name }}</h5>
+                    <p class="card-text">{{ destination.description[:100] }}...</p>
+                    <a href="{{ url_for('destination_detail', id=destination.id) }}" class="btn btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}

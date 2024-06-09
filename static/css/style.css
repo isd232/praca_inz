@@ -1,10 +1,14 @@
-h1{
-    color: darkblue;
-    font-size: 60px;
+body {
+    background-color: #f8f9fa;  /* Light gray background */
+    font-family: Arial, sans-serif;  /* Standard font */
 }
 
-body{
-    background: #f4f4f4;
+h1 {
+    color: #0056b3;  /* Theme color for headers */
+}
+
+.list-group-item-action:hover {
+    background-color: #f0f0f0;  /* Light hover effect for list items */
 }
 
 #demo{

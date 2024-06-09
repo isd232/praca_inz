@@ -2,151 +2,83 @@
 
 {% block content %}
 <h1>Interactive Map</h1>
-<div id="map" style="height: 600px;"></div>
-{% endblock %}
+<div id="map-container" style="height: 600px;">
+    {% include 'folium_map.html' %}
+</div>
+<p>Click on the map to select your location. Selected coordinates: <span id="coordinates"></span></p>
 
-{% block scripts %}
 <script>
-// Initialize the map
-var map = L.map('map').setView([51.505, -0.09], 13);
+    // Initialize the map with Leaflet
+    var map = L.map('mapid').setView([51.5074, -0.1278], 10);
 
-// Add the OSM tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+    // Add the tile layer from OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
 
-var searchPolygon = null;
-var searchMarker = null;
-var markers = [];
+    // Add a marker to the map
+    var marker = L.marker([51.5074, -0.1278]).addTo(map);
 
-// Function to add a removable marker
-function addRemovableMarker(latlng, popupText) {
-    var marker = L.marker(latlng).addTo(map);
-    marker.bindPopup(popupText + '<br><button onclick="removeMarker(' + markers.length + ')">Remove</button>').openPopup();
-    markers.push(marker);
-}
-
-// Remove a marker by index
-function removeMarker(index) {
-    if (markers[index]) {
-        map.removeLayer(markers[index]);
-        markers[index] = null; // Optional: Remove this line if you want to keep the index unchanged
+    // Function to update the marker and display coordinates
+    function onMapClick(e) {
+        marker.setLatLng(e.latlng);
+        document.getElementById('coordinates').innerText = e.latlng.lat + ", " + e.latlng.lng;
     }
-}
 
-// Search for places
-var searchControl = L.Control.geocoder({
-    defaultMarkGeocode: false
-})
-    .on('markgeocode', function(e) {
-        if (searchPolygon) {
-            map.removeLayer(searchPolygon);
+    // Add click event listener to the map
+    map.on('click', onMapClick);
+
+    // Function to handle the geolocation success
+    function onLocationFound(e) {
+        var latlng = e.latlng || e.coords;
+        map.setView(latlng, 13);
+        marker.setLatLng(latlng);
+        document.getElementById('coordinates').innerText = latlng.lat + ", " + latlng.lng;
+    }
+
+    // Function to handle the geolocation error
+    function onLocationError(e) {
+        alert(e.message);
+    }
+
+    // Function to locate the user
+    function locateUser() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                onLocationFound({latlng: {lat: position.coords.latitude, lng: position.coords.longitude}});
+            }, onLocationError);
+        } else {
+            alert("Geolocation is not supported by this browser.");
         }
-        if (searchMarker) {
-            map.removeLayer(searchMarker);
+    }
+
+    // Create a custom control for the locate button
+    var locateControl = L.Control.extend({
+        options: {
+            position: 'topright' // position of the control
+        },
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+
+            container.style.backgroundColor = 'white';
+            container.style.width = '30px';
+            container.style.height = '30px';
+            container.style.backgroundImage = "url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Location_dot_black.svg')";
+            container.style.backgroundSize = "20px 20px";
+            container.style.backgroundRepeat = "no-repeat";
+            container.style.backgroundPosition = "center";
+            container.style.cursor = "pointer";
+            container.title = "Show current location";
+
+            container.onclick = function(){
+                locateUser();
+            }
+
+            return container;
         }
+    });
 
-        var bbox = e.geocode.bbox;
-        searchPolygon = L.polygon([
-            [bbox.getSouthEast().lat, bbox.getSouthEast().lng],
-            [bbox.getNorthEast().lat, bbox.getNorthEast().lng],
-            [bbox.getNorthWest().lat, bbox.getNorthWest().lng],
-            [bbox.getSouthWest().lat, bbox.getSouthWest().lng]
-        ]).addTo(map);
-        map.fitBounds(searchPolygon.getBounds());
+    map.addControl(new locateControl());
 
-        addRemovableMarker(e.geocode.center, e.geocode.name);
-    })
-    .addTo(map);
-
-// Locate the current position of the user
-function locateUser() {
-    map.locate({setView: true, maxZoom: 16});
-}
-
-function onLocationFound(e) {
-    var radius = e.accuracy / 2;
-    var marker = L.marker(e.latlng).addTo(map)
-        .bindPopup("You are within " + radius + " meters from this point<br><button onclick='removeMarker(" + markers.length + ")'>Remove</button>")
-        .openPopup();
-    markers.push(marker);
-    L.circle(e.latlng, radius).addTo(map);
-}
-
-function onLocationError(e) {
-    alert(e.message);
-}
-
-map.on('locationfound', onLocationFound);
-map.on('locationerror', onLocationError);
-
-// Add a custom control to show the user's location
-L.Control.ShowLocation = L.Control.extend({
-    onAdd: function(map) {
-        var btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
-        btn.innerHTML = '<img src="{{ url_for('static', filename='images/location_icon.png') }}" alt="Show Location" style="width: 20px; height: 20px;">';
-        btn.style.backgroundColor = 'white';
-        btn.style.width = '30px';
-        btn.style.height = '30px';
-        btn.title = 'Show My Location';
-
-        btn.onclick = function() {
-            locateUser();
-        };
-
-        return btn;
-    },
-
-    onRemove: function(map) {
-        // Nothing to do here
-    }
-});
-
-L.control.showLocation = function(opts) {
-    return new L.Control.ShowLocation(opts);
-}
-
-L.control.showLocation({ position: 'topright' }).addTo(map);
-
-// Add a custom control to clear the search results and markers
-L.Control.ClearSearch = L.Control.extend({
-    onAdd: function(map) {
-        var btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom');
-        btn.innerHTML = 'X';
-        btn.style.backgroundColor = 'white';
-        btn.style.width = '30px';
-        btn.style.height = '30px';
-        btn.title = 'Clear Search Results';
-
-        btn.onclick = function() {
-            if (searchPolygon) {
-                map.removeLayer(searchPolygon);
-                searchPolygon = null;
-            }
-            if (searchMarker) {
-                map.removeLayer(searchMarker);
-                searchMarker = null;
-            }
-            markers.forEach(function(marker, index) {
-                if (marker) {
-                    map.removeLayer(marker);
-                    markers[index] = null; // Optional: Remove this line if you want to keep the index unchanged
-                }
-            });
-        };
-
-        return btn;
-    },
-
-    onRemove: function(map) {
-        // Nothing to do here
-    }
-});
-
-L.control.clearSearch = function(opts) {
-    return new L.Control.ClearSearch(opts);
-}
-
-L.control.clearSearch({ position: 'topright' }).addTo(map);
 </script>
 {% endblock %}
