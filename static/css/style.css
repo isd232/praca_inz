@@ -1,11 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #0056b3;
+    --secondary-color: #e9ecef;
+    --accent-color: #ffc107;
+}
+
+.navbar {
+    background-color: var(--primary-color);
+    position: static; /* Make navbar static on smaller screens */
+    top: 0;
+    z-index: 1000;
+}
+
 body {
     background-color: #f8f9fa;  /* Light gray background */
-    font-family: Arial, sans-serif;  /* Standard font */
+    font-family: 'Roboto', sans-serif;
+}
+button {
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--accent-color);
+}
+
+.card {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
 }
 
 h1 {
-    color: #0056b3;  /* Theme color for headers */
+    font-size: 2.5rem; /* Larger size for more impact */
 }
+
+h2 {
+    font-size: 2rem;
+}
+
 
 .list-group-item-action:hover {
     background-color: #f0f0f0;  /* Light hover effect for list items */
@@ -19,33 +59,128 @@ h1 {
 .post-container {
     display: flex;
     align-items: flex-start;
-    border: 1px solid #ddd;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%; /* Ensure it takes full width */
+    border: 1px solid #dee2e6; /* Light grey border */
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    background-color: #fff; /* White background for posts */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
 }
 
+/* Voting button container */
 .vote-container {
+    margin-right: 16px; /* Spacing between vote and content */
+    text-align: center; /* Centering the vote buttons */
+}
+
+/* Vote buttons */
+.vote-form button {
+    display: block; /* Block display for stacking */
+    margin: 4px 0; /* Margin for spacing between buttons */
+    width: 40px; /* Fixed width for alignment */
+}
+
+/* Vote score */
+.vote-score {
+    font-size: 1.2rem;
+    color: #495057; /* Dark grey for better readability */
+}
+
+.voting-buttons {
+    margin-right: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-right: 15px;
-    min-width: 40px; /* Adjust width as necessary */
 }
 
-.vote-score {
-    font-size: 1.2em;
-    margin: 5px 0;
+.vote-button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 24px; /* Adjust size as needed */
+}
+
+.upvote-button {
+    color: green;
+}
+
+.downvote-button {
+    color: red;
+}
+
+.vote-button:hover {
+    opacity: 0.8;
+}
+
+.vote-button i {
+    margin: 5px; /* Padding around the icon for easier clicking */
+}
+/* Post content styling */
+.post-content h2 {
+    margin-bottom: 0.5rem; /* Reduced bottom margin */
+}
+
+.post-content small {
+    color: #6c757d; /* Muted color for meta info */
+}
+
+.post-content a {
+    margin-right: 8px; /* Space between buttons */
+}
+
+.inline-form {
+    display: inline; /* Inline form for delete button next to others */
 }
 
 .inline-form {
     display: inline;
 }
 
+/* Card styling for each post */
+.post-card {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.post-title {
+    color: #007bff; /* Bootstrap primary color for titles */
+    font-size: 24px; /* Larger font size for titles */
+    margin-bottom: 10px; /* Space below the title */
+}
+
+.post-meta {
+    font-size: 14px;
+    color: #6c757d; /* Bootstrap secondary text color for metadata */
+    margin-bottom: 15px; /* Space below the metadata */
+}
+
 .post-content {
-    flex-grow: 1;
-    max-width: calc(100% - 55px); /* Adjust to ensure it fits next to vote-container */
+    font-size: 16px; /* Readable text size */
+    color: #212529; /* Slightly darker text for readability */
+    margin-bottom: 20px; /* Space below the post content */
+}
+
+/* Button styling */
+.post-button {
+    text-decoration: none;
+    color: white;
+    background-color: #28a745; /* Bootstrap success color */
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.post-button:hover {
+    background-color: #218838; /* Darker shade on hover */
+}
+
+.post-button:not(:last-child) {
+    margin-right: 10px; /* Space between buttons */
 }
 
 .ui-autocomplete {

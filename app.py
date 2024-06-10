@@ -100,7 +100,6 @@ def edit_user(user_id):
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
-        user.favorite_color = form.favorite_color.data  # Assuming the form and model have this field
         db.session.commit()
         flash('User updated successfully!', 'success')
         return redirect(url_for('admin_users'))
@@ -120,7 +119,6 @@ def delete_user(user_id):
     db.session.commit()
     flash('User deleted successfully!', 'success')
     return redirect(url_for('admin_users'))
-
 
 
 # Create Search Function
@@ -293,6 +291,7 @@ def fuel_calculator():
 
                            conversion_result=conversion_result)
 
+
 def fetch_travel_tips(location):
     # This is a placeholder. You can implement database queries or API calls here.
     # Example:
@@ -311,7 +310,6 @@ def travel_tips():
         locations = Location.query.all()
 
     return render_template('travel_tips.html', locations=locations, search_form=search_form)
-
 
 
 @app.route('/edit_travel_tip/<int:id>', methods=['GET', 'POST'])
@@ -390,6 +388,7 @@ def list_locations():
     locations = Location.query.all()  # Fetch all locations from the database
     return render_template('list_locations.html', locations=locations)
 
+
 # See specific location
 @app.route('/locations/<int:location_id>')
 def view_location(location_id):
@@ -411,13 +410,10 @@ def delete_location(id):
     return redirect(url_for('travel_tips_admin'))
 
 
-@app.route('/post/<int:post_id>')
-def post_detail(post_id):
-    post = Posts.query.get(post_id)
-    if not post:
-        abort(404)  # If no post is found, return a 404 Not Found error.
-
-    return render_template('post_detail.html', post=post)
+@app.route('/post/<int:id>')
+def view_post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('view_post.html', post=post)
 
 
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
@@ -500,9 +496,12 @@ def delete_post(id):
 
 @app.route('/posts')
 def posts():
-    # Grab all the posts from the database
-    posts = Posts.query.order_by(Posts.date_posted.desc()).all()
-    return render_template("posts.html", posts=posts)
+    sort_by = request.args.get('sort', 'date')  # Default sort by date
+    if sort_by == 'score':
+        posts = Posts.query.order_by(Posts.score.desc()).all()  # Assuming 'score' is a column in your Post model
+    else:
+        posts = Posts.query.order_by(Posts.date_posted.desc()).all()
+    return render_template('posts.html', posts=posts)
 
 
 @app.route('/posts/<int:id>')
@@ -516,29 +515,18 @@ def post(id):
 @login_required
 def edit_post(id):
     post = Posts.query.get_or_404(id)
-    form = PostForm()
+    form = PostForm(obj=post)
     if form.validate_on_submit():
         post.title = form.title.data
-        # post.author = form.author.data
-        post.slug = form.slug.data
         post.content = form.content.data
-        # Update Database
-        db.session.add(post)
         db.session.commit()
-        flash("Post Has Been Updated!")
-        return redirect(url_for('post', id=post.id))
-
-    if current_user.id == post.poster_id or current_user.id == 13:
+        flash("Post updated successfully!", 'success')
+        return redirect(url_for('view_post', id=post.id))
+    elif request.method == 'GET':
         form.title.data = post.title
-        # form.author.data = post.author
-        form.slug.data = post.slug
         form.content.data = post.content
-        return render_template('edit_post.html', form=form)
-    else:
-        flash("You Aren't Authorized To Edit This Post...")
-        # Grab all the posts from the database
-        posts = Posts.query.order_by(Posts.date_posted)
-        return render_template("posts.html", posts=posts)
+    return render_template('edit_post.html', form=form)
+
 
 
 # Add Post Page

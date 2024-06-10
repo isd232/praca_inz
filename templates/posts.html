@@ -1,40 +1,55 @@
 {% extends 'base.html' %}
 
-{% block content %}
-{% for message in get_flashed_messages() %}
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-{% endfor %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<title>Posts</title>
+{% endblock %}
 
-{% for post in posts %}
-<div class="post-container">
-    <div class="vote-container">
-        <form action="{{ url_for('upvote_post', id=post.id) }}" method="POST" class="vote-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-sm btn-success">▲</button>
-        </form>
-        <div class="vote-score">{{ post.score() }}</div>
-        <form action="{{ url_for('downvote_post', id=post.id) }}" method="POST" class="vote-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-sm btn-danger">▼</button>
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Posts</h1>
+
+    <!-- Sorting Options -->
+    <div class="sorting-options mb-3">
+        <form method="get" action="{{ url_for('posts') }}" class="form-inline">
+            <select name="sort" class="form-control" onchange="this.form.submit()">
+                <option value="date" {% if request.args.get('sort') == 'date' %}selected{% endif %}>Date Added</option>
+                <option value="score" {% if request.args.get('sort') == 'score' %}selected{% endif %}>Vote Score</option>
+            </select>
         </form>
     </div>
-    <div class="post-content">
-        <h2><a href="{{ url_for('post', id=post.id) }}">{{ post.title }}</a><br/></h2>
-        <small>By: {{ post.poster.name }}<br/>
-        {{ post.date_posted.strftime('%Y-%m-%d') }}</small><br/><br/>
-        {{ post.content | safe}}<br/><br/>
-        <a href="{{ url_for('post', id=post.id) }}" class="btn btn-outline-secondary btn-sm">View Post</a>
-        {% if post.poster_id == current_user.id or current_user.id == 13 %}
-        <a href="{{ url_for('edit_post', id=post.id) }}" class="btn btn-outline-secondary btn-sm">Edit Post</a>
-        <form action="{{ url_for('delete_post', id=post.id) }}" method="post" class="inline-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-danger btn-sm">Delete Post</button>
-        </form>
-        {% endif %}
+
+    <!-- Posts Display -->
+    {% for post in posts %}
+    <div class="post-card" style="display: flex; align-items: start; margin-bottom: 20px;">
+        <!-- Voting Section -->
+        <div class="voting-buttons" style="margin-right: 20px; display: flex; flex-direction: column; align-items: center;">
+            <form action="{{ url_for('upvote_post', id=post.id) }}" method="post" style="margin-bottom: 5px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="vote-button upvote-button">
+                    <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                </button>
+            </form>
+            <div style="font-size: 18px; color: #333;">{{ post.score() }}</div>
+            <form action="{{ url_for('downvote_post', id=post.id) }}" method="post" style="margin-top: 5px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="vote-button downvote-button">
+                    <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                </button>
+            </form>
+        </div>
+        <!-- Clickable Post Content -->
+        <a href="{{ url_for('post', id=post.id) }}" style="flex-grow: 1; color: inherit; text-decoration: none;">
+            <div>
+                <h5>{{ post.title }}</h5>
+                <p>{{ post.content | truncate(150, True, '...') | safe }}
+                <div>{{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.poster.name }}</div>
+            </div>
+        </a>
     </div>
+    {% else %}
+    <p>No posts available.</p>
+    {% endfor %}
 </div>
-{% endfor %}
 {% endblock %}
