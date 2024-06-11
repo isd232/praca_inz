@@ -2,6 +2,7 @@ from flask import Flask, render_template, flash, request, redirect, url_for, jso
 from flask_migrate import Migrate
 from datetime import date
 from flask_wtf import CSRFProtect
+from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
@@ -12,7 +13,6 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
-import folium
 
 
 # export FLASK_ENV=development
@@ -498,9 +498,15 @@ def delete_post(id):
 def posts():
     sort_by = request.args.get('sort', 'date')  # Default sort by date
     if sort_by == 'score':
-        posts = Posts.query.order_by(Posts.score.desc()).all()  # Assuming 'score' is a column in your Post model
+        # Ensure that Posts.score is defined as a hybrid property that can be used directly in queries
+        try:
+            posts = Posts.query.order_by(desc(Posts.score)).all()
+        except Exception as e:
+            print(f"Error sorting by score: {e}")
+            posts = Posts.query.order_by(Posts.date_posted.desc()).all()  # Fallback to date sorting
     else:
         posts = Posts.query.order_by(Posts.date_posted.desc()).all()
+
     return render_template('posts.html', posts=posts)
 
 

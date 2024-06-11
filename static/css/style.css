@@ -147,22 +147,22 @@ h2 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.post-title {
-    color: #007bff; /* Bootstrap primary color for titles */
-    font-size: 24px; /* Larger font size for titles */
-    margin-bottom: 10px; /* Space below the title */
+.post-meta {
+    font-size: 0.85rem; /* Smaller font size for meta information */
+    color: #6c757d; /* Subdued color to differentiate from main content */
+    margin-bottom: 5px; /* Space below the metadata before content */
 }
 
-.post-meta {
-    font-size: 14px;
-    color: #6c757d; /* Bootstrap secondary text color for metadata */
-    margin-bottom: 15px; /* Space below the metadata */
+.post-title {
+    font-size: 1.25rem; /* Larger and bolder title */
+    font-weight: bold;
+    margin-bottom: 5px; /* Space below the title */
 }
 
 .post-content {
-    font-size: 16px; /* Readable text size */
-    color: #212529; /* Slightly darker text for readability */
-    margin-bottom: 20px; /* Space below the post content */
+    font-size: 1rem; /* Standard size for content for readability */
+    color: #333; /* Darker color for emphasis */
+    line-height: 1.6; /* Improved line height for readability */
 }
 
 /* Button styling */

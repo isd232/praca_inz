@@ -23,7 +23,7 @@
     <!-- Posts Display -->
     {% for post in posts %}
     <div class="post-card" style="display: flex; align-items: start; margin-bottom: 20px;">
-        <!-- Voting Section -->
+         <!-- Voting Section -->
         <div class="voting-buttons" style="margin-right: 20px; display: flex; flex-direction: column; align-items: center;">
             <form action="{{ url_for('upvote_post', id=post.id) }}" method="post" style="margin-bottom: 5px;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -31,7 +31,7 @@
                     <i class="fa fa-arrow-up" aria-hidden="true"></i>
                 </button>
             </form>
-            <div style="font-size: 18px; color: #333;">{{ post.score() }}</div>
+            <div style="font-size: 18px; color: #333;">{{ post.score }}</div>
             <form action="{{ url_for('downvote_post', id=post.id) }}" method="post" style="margin-top: 5px;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="vote-button downvote-button">
@@ -40,11 +40,12 @@
             </form>
         </div>
         <!-- Clickable Post Content -->
+        <!-- Clickable Post Content -->
         <a href="{{ url_for('post', id=post.id) }}" style="flex-grow: 1; color: inherit; text-decoration: none;">
             <div>
-                <h5>{{ post.title }}</h5>
-                <p>{{ post.content | truncate(150, True, '...') | safe }}
-                <div>{{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.poster.name }}</div>
+                <h5 class="post-title">{{ post.title }}</h5>
+                <div class="post-meta">{{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.poster.name }}</div>
+                <p class="post-content">{{ post.content | truncate(150, True, '...') | safe }}
             </div>
         </a>
     </div>
