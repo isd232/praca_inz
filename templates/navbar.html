@@ -7,17 +7,6 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-
-        <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('fuel_calculator') }}">Fuel Calculator</a>
-          </li>
-
-
-        {% if current_user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('dashboard') }}">Dashboard</a>
-          </li>
-
         {% if current_user.id == 13 %}
 
           <li class="nav-item">
@@ -26,7 +15,13 @@
 
         {% endif %}
 
+        {% if current_user.is_authenticated %}
           <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{{ url_for('dashboard') }}">Dashboard</a>
+          </li>
+
+
+          <li class="nav-item ">
             <a class="nav-link active" aria-current="page" href="{{ url_for('logout') }}">Logout</a>
           </li>
         {% else %}
@@ -38,6 +33,10 @@
             <a class="nav-link active" aria-current="page" href="{{ url_for('login') }}">Login</a>
           </li>
         {% endif %}
+
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{{ url_for('fuel_calculator') }}">Fuel Calculator</a>
+          </li>
 
 
         <li class="nav-item">
@@ -52,11 +51,6 @@
           <a class="nav-link active" aria-current="page" href="{{ url_for('travel_tips') }}">Travel Tips</a>
         </li>
 
-        {% if current_user.is_authenticated and current_user.id == 13 %}
-          <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('travel_tips_admin') }}">Admin Travel Tips</a>
-          </li>
-        {% endif %}
 
       </ul>
       <form method="POST" action="{{ url_for('search') }}" class="d-flex">
@@ -64,6 +58,8 @@
         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="searched">
         <button class="btn btn-outline-secondary" type="submit">Search</button>
       </form>
+
+
     </div>
   </div>
 </nav>

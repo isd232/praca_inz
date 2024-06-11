@@ -457,9 +457,10 @@ def downvote_post(id):
         db.session.add(vote)
         # flash('Downvoted!', 'success')
 
-    sort_by = request.args.get('sort', 'date')  # Fetch the current sorting method from URL parameters
+    # Fetch the current sorting method from URL parameters
+    sort_by = request.args.get('sort', 'date')
     db.session.commit()
-    return redirect(url_for('posts', sort=sort_by))  # Redirect with the current sorting method
+    return redirect(url_for('posts', sort=sort_by))
 
 
 
@@ -506,7 +507,8 @@ def posts():
     # Update the session if a new sort parameter is provided
     if 'sort' in request.args:
         sort_by = request.args.get('sort')
-        session['sort_by'] = sort_by  # Store the sorting preference in session
+        # Store the sorting preference in session
+        session['sort_by'] = sort_by
 
     if sort_by == 'score':
         posts = Posts.query.all()

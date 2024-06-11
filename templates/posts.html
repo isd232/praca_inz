@@ -7,19 +7,21 @@
 {% endblock %}
 
 {% block content %}
+<script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
+
 <div class="container mt-5">
     <h1 class="mb-4">Posts</h1>
 
     <!-- Sorting Options -->
-    <div class="sorting-options mb-3">
-        <form method="get" action="{{ url_for('posts') }}" class="form-inline">
-            <select name="sort" class="form-control" onchange="this.form.submit()">
-                <option value="date" {% if request.args.get('sort') == 'date' %}selected{% endif %}>Date Added</option>
-                <option value="score" {% if request.args.get('sort') == 'score' %}selected{% endif %}>Vote Score</option>
-            </select>
-        </form>
+    <div class="dropdown-container">
+        <div class="dropdown">
+            <button onclick="toggleDropdown()" class="dropbtn">Sort by <i class="fa fa-caret-down"></i></button>
+            <div id="myDropdown" class="dropdown-content">
+                <a href="{{ url_for('posts', sort='date') }}" class="sort-button {{ 'active' if request.args.get('sort', 'date') == 'date' else '' }}">Date Added</a>
+                <a href="{{ url_for('posts', sort='score') }}" class="sort-button {{ 'active' if request.args.get('sort') == 'score' else '' }}">Vote Score</a>
+            </div>
+        </div>
     </div>
-
     <!-- Posts Display -->
     {% for post in posts %}
     <div class="post-card" style="display: flex; align-items: start; margin-bottom: 20px;">
