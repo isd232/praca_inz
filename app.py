@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, request, redirect, url_for, jsonify
+from flask import Flask, render_template, flash, request, redirect, url_for, jsonify, session
 from flask_migrate import Migrate
 from datetime import date
 from flask_wtf import CSRFProtect
@@ -425,17 +425,18 @@ def upvote_post(id):
     if existing_vote:
         if existing_vote.vote_type == 'upvote':
             db.session.delete(existing_vote)
-            flash('Vote removed.', 'info')
+            # flash('Vote removed.', 'info')
         else:
             existing_vote.vote_type = 'upvote'
-            flash('Vote changed to upvote.', 'success')
+            # flash('Vote changed to upvote.', 'success')
     else:
         vote = Votes(user_id=current_user.id, post_id=id, vote_type='upvote')
         db.session.add(vote)
-        flash('Upvoted!', 'success')
+        # flash('Upvoted!', 'success')
 
+    sort_by = request.args.get('sort', 'date')  # Fetch the current sorting method from URL parameters
     db.session.commit()
-    return redirect(url_for('posts'))
+    return redirect(url_for('posts', sort=sort_by))  # Redirect with the current sorting method
 
 
 @app.route('/posts/downvote/<int:id>', methods=['POST'])
@@ -447,17 +448,20 @@ def downvote_post(id):
     if existing_vote:
         if existing_vote.vote_type == 'downvote':
             db.session.delete(existing_vote)
-            flash('Downvote removed.', 'info')
+            # flash('Downvote removed.', 'info')
         else:
             existing_vote.vote_type = 'downvote'
-            flash('Vote changed to downvote.', 'success')
+            # flash('Vote changed to downvote.', 'success')
     else:
         vote = Votes(user_id=current_user.id, post_id=id, vote_type='downvote')
         db.session.add(vote)
-        flash('Downvoted!', 'success')
+        # flash('Downvoted!', 'success')
 
+    sort_by = request.args.get('sort', 'date')  # Fetch the current sorting method from URL parameters
     db.session.commit()
-    return redirect(url_for('posts'))
+    return redirect(url_for('posts', sort=sort_by))  # Redirect with the current sorting method
+
+
 
 
 @app.route('/posts/delete/<int:id>')
@@ -496,18 +500,22 @@ def delete_post(id):
 
 @app.route('/posts')
 def posts():
-    sort_by = request.args.get('sort', 'date')  # Default sort by date
+    # Default to session's sort preference if available, else default to 'date'
+    sort_by = session.get('sort_by', 'date')
+
+    # Update the session if a new sort parameter is provided
+    if 'sort' in request.args:
+        sort_by = request.args.get('sort')
+        session['sort_by'] = sort_by  # Store the sorting preference in session
+
     if sort_by == 'score':
-        # Ensure that Posts.score is defined as a hybrid property that can be used directly in queries
-        try:
-            posts = Posts.query.order_by(desc(Posts.score)).all()
-        except Exception as e:
-            print(f"Error sorting by score: {e}")
-            posts = Posts.query.order_by(Posts.date_posted.desc()).all()  # Fallback to date sorting
+        posts = Posts.query.all()
+        posts = sorted(posts, key=lambda post: post.score(), reverse=True)
     else:
         posts = Posts.query.order_by(Posts.date_posted.desc()).all()
 
-    return render_template('posts.html', posts=posts)
+    return render_template('posts.html', posts=posts, sort_by=sort_by)
+
 
 
 @app.route('/posts/<int:id>')

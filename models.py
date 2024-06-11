@@ -1,10 +1,9 @@
 from datetime import datetime
+from functools import lru_cache
+
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import select, func, case
-from sqlalchemy.orm import column_property
 
 db = SQLAlchemy()
 
@@ -45,18 +44,20 @@ class Posts(db.Model):
     slug = db.Column(db.String(255), nullable=False)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    @hybrid_property
-    def score(self):
-        # Placeholder for Python side; real logic in @score.expression
-        return 0
+    def __repr__(self):
+        return f'<Post {self.title} by {self.poster_id}>'
 
-    @score.expression
-    def score(cls):
-        upvotes = select([func.count()]).where(Votes.post_id == cls.id, Votes.vote_type == 'upvote').label(
-            'upvotes').as_scalar()
-        downvotes = select([func.count()]).where(Votes.post_id == cls.id, Votes.vote_type == 'downvote').label(
-            'downvotes').as_scalar()
+    @lru_cache(maxsize=100)
+    def score(self):
+        upvotes = Votes.query.filter_by(post_id=self.id, vote_type='upvote').count()
+        downvotes = Votes.query.filter_by(post_id=self.id, vote_type='downvote').count()
         return upvotes - downvotes
+
+    def user_upvoted(self, user_id):
+        return Votes.query.filter_by(post_id=self.id, user_id=user_id, vote_type='upvote').count() > 0
+
+    def user_downvoted(self, user_id):
+        return Votes.query.filter_by(post_id=self.id, user_id=user_id, vote_type='downvote').count() > 0
 
 
 # Create Model
@@ -72,9 +73,8 @@ class Users(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
 
     # Relationship with Posts
-    posts = db.relationship('Posts', backref='poster', lazy='dynamic')
-    votes = db.relationship('Votes', backref='voter', lazy='dynamic')
-    
+    posts = db.relationship('Posts', backref='poster', lazy=True)  # backref provides access from Posts to Users
+
     def is_admin(self):
         return self.admin
 

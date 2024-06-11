@@ -34,12 +34,13 @@ button:hover {
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-h1, h2, h3 {
+h2, h3 {
     color: var(--primary-color);
 }
 
 h1 {
     font-size: 2.5rem; /* Larger size for more impact */
+    color: black;
 }
 
 h2 {
@@ -98,6 +99,8 @@ h2 {
     background: none;
     cursor: pointer;
     font-size: 24px; /* Adjust size as needed */
+    padding: 3px;
+
 }
 
 .upvote-button {
@@ -108,7 +111,12 @@ h2 {
     color: red;
 }
 
+.vote-button.voted {
+    background-color: #cccccc; /* Background color for voted state */
+}
+
 .vote-button:hover {
+    background-color: #e0e0e0; /* Hover effect */
     opacity: 0.8;
 }
 
@@ -140,11 +148,26 @@ h2 {
 .post-card {
     display: flex;
     align-items: flex-start;
+    font-size: 16px;
+    color: #666;
+    margin-top: 10px;
     margin-bottom: 20px;
     background: #fff;
     padding: 15px;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+}
+
+.post-content {
+    font-size: 20px;
+    color: #333;
+}
+
+.post-metadata {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
 }
 
 .post-meta {
@@ -154,6 +177,7 @@ h2 {
 }
 
 .post-title {
+
     font-size: 1.25rem; /* Larger and bolder title */
     font-weight: bold;
     margin-bottom: 5px; /* Space below the title */
