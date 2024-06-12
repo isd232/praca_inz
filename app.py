@@ -500,6 +500,7 @@ def delete_post(id):
 
 
 @app.route('/posts')
+@login_required
 def posts():
     # Default to session's sort preference if available, else default to 'date'
     sort_by = session.get('sort_by', 'date')

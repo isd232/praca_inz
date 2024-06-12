@@ -8,7 +8,7 @@
 
 .navbar {
     background-color: var(--primary-color);
-    position: static; /* Make navbar static on smaller screens */
+    position: sticky; /* Make navbar static on smaller screens */
     top: 0;
     z-index: 1000;
 }
