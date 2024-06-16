@@ -8,13 +8,16 @@
 
 .navbar {
     background-color: var(--primary-color);
-    position: sticky; /* Make navbar static on smaller screens */
+    position: sticky;
     top: 0;
     z-index: 1000;
 }
 
+.ikona {
+
+}
 body {
-    background-color: #f8f9fa;  /* Light gray background */
+    background-color: #f8f9fa;
     font-family: 'Roboto', sans-serif;
 }
 button {
@@ -34,7 +37,6 @@ button:hover {
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
-/* Dropdown Button */
 .dropbtn {
     background-color: #4CAF50;
     color: white;
@@ -46,14 +48,13 @@ button:hover {
 
 .dropdown-container {
     display: flex;
-    justify-content: flex-end; /* Aligns children (dropdown) to the right */
+    justify-content: flex-end;
 }
 
 .dropdown {
-    position: relative; /* Needed for absolute positioning of dropdown content */
+    position: relative;
 }
 
-/* Dropdown Content (Hidden by Default) */
 .dropdown-content {
     display: none;
     position: absolute;
@@ -63,7 +64,6 @@ button:hover {
     z-index: 1;
 }
 
-/* Links inside the dropdown */
 .dropdown-content a {
     color: black;
     padding: 12px 16px;
@@ -71,24 +71,20 @@ button:hover {
     display: block;
 }
 
-/* Change color of dropdown links on hover */
 .dropdown-content a:hover {background-color: #ddd;}
 
-/* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
-/* Show the dropdown menu on click (add this if using JavaScript) */
 .show {display: block;}
-
 
 h2, h3 {
     color: var(--primary-color);
 }
 
 h1 {
-    font-size: 2.5rem; /* Larger size for more impact */
+    font-size: 2.5rem;
     color: black;
 }
 
@@ -96,9 +92,8 @@ h2 {
     font-size: 2rem;
 }
 
-
 .list-group-item-action:hover {
-    background-color: #f0f0f0;  /* Light hover effect for list items */
+    background-color: #f0f0f0;
 }
 
 #demo{
@@ -109,31 +104,28 @@ h2 {
 .post-container {
     display: flex;
     align-items: flex-start;
-    border: 1px solid #dee2e6; /* Light grey border */
+    border: 1px solid #dee2e6;
     padding: 16px;
     margin-bottom: 16px;
     border-radius: 8px;
-    background-color: #fff; /* White background for posts */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Voting button container */
 .vote-container {
-    margin-right: 16px; /* Spacing between vote and content */
-    text-align: center; /* Centering the vote buttons */
+    margin-right: 16px;
+    text-align: center;
 }
 
-/* Vote buttons */
 .vote-form button {
-    display: block; /* Block display for stacking */
-    margin: 4px 0; /* Margin for spacing between buttons */
-    width: 40px; /* Fixed width for alignment */
+    display: block;
+    margin: 4px 0;
+    width: 40px;
 }
 
-/* Vote score */
 .vote-score {
     font-size: 1.2rem;
-    color: #495057; /* Dark grey for better readability */
+    color: #495057;
 }
 
 .voting-buttons {
@@ -147,7 +139,7 @@ h2 {
     border: none;
     background: none;
     cursor: pointer;
-    font-size: 24px; /* Adjust size as needed */
+    font-size: 24px;
     padding: 3px;
 
 }
@@ -161,39 +153,38 @@ h2 {
 }
 
 .vote-button.voted {
-    background-color: #cccccc; /* Background color for voted state */
+    background-color: #cccccc;
 }
 
 .vote-button:hover {
-    background-color: #e0e0e0; /* Hover effect */
+    background-color: #e0e0e0;
     opacity: 0.8;
 }
 
 .vote-button i {
-    margin: 5px; /* Padding around the icon for easier clicking */
+    margin: 5px;
 }
 /* Post content styling */
 .post-content h2 {
-    margin-bottom: 0.5rem; /* Reduced bottom margin */
+    margin-bottom: 0.5rem;
 }
 
 .post-content small {
-    color: #6c757d; /* Muted color for meta info */
+    color: #6c757d;
 }
 
 .post-content a {
-    margin-right: 8px; /* Space between buttons */
-}
-
-.inline-form {
-    display: inline; /* Inline form for delete button next to others */
+    margin-right: 8px;
 }
 
 .inline-form {
     display: inline;
 }
 
-/* Card styling for each post */
+.inline-form {
+    display: inline;
+}
+
 .post-card {
     display: flex;
     align-items: flex-start;
@@ -220,40 +211,39 @@ h2 {
 }
 
 .post-meta {
-    font-size: 0.85rem; /* Smaller font size for meta information */
-    color: #6c757d; /* Subdued color to differentiate from main content */
-    margin-bottom: 5px; /* Space below the metadata before content */
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 5px;
 }
 
 .post-title {
 
-    font-size: 1.25rem; /* Larger and bolder title */
+    font-size: 1.25rem;
     font-weight: bold;
-    margin-bottom: 5px; /* Space below the title */
+    margin-bottom: 5px;
 }
 
 .post-content {
-    font-size: 1rem; /* Standard size for content for readability */
-    color: #333; /* Darker color for emphasis */
-    line-height: 1.6; /* Improved line height for readability */
+    font-size: 1rem;
+    color: #333;
+    line-height: 1.6;
 }
 
-/* Button styling */
 .post-button {
     text-decoration: none;
     color: white;
-    background-color: #28a745; /* Bootstrap success color */
+    background-color: #28a745;
     padding: 10px 15px;
     border-radius: 5px;
     transition: background-color 0.3s;
 }
 
 .post-button:hover {
-    background-color: #218838; /* Darker shade on hover */
+    background-color: #218838;
 }
 
 .post-button:not(:last-child) {
-    margin-right: 10px; /* Space between buttons */
+    margin-right: 10px;
 }
 
 .ui-autocomplete {
@@ -264,10 +254,10 @@ h2 {
     overflow-x: hidden;
     border: 1px solid #ddd;
     background-color: white;
-    width: 300px; /* or 100% to match input width */
+    width: 300px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    list-style-type: none; /* Remove bullet points */
-    padding-left: 0; /* Remove padding */
+    list-style-type: none;
+    padding-left: 0;
 }
 
 .ui-autocomplete .ui-menu-item {
@@ -275,16 +265,25 @@ h2 {
     cursor: pointer;
     font-size: 16px;
     line-height: 24px;
-    border-bottom: 1px solid #eee; /* Optional: adds a subtle line between items */
+    border-bottom: 1px solid #eee;
 }
 
 .ui-autocomplete .ui-menu-item:last-child {
-    border-bottom: none; /* Prevents a border on the last item */
+    border-bottom: none;
 }
 
 .ui-state-focus,
 .ui-menu-item:hover {
     background-color: #f8f9fa;
     color: #333;
+}
+
+.icon {
+    height: 48px;
+    width: 48px;
+}
+
+.pic-main {
+    margin-right: 800px;
 }
 
