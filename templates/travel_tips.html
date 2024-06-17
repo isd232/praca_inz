@@ -5,15 +5,15 @@
     <h1 class="text-center mb-4">Travel Tips</h1>
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <form class="input-group mb-3" method="POST">
+            <!-- Single form for search -->
+            <form class="input-group mb-3" method="POST" action="{{ url_for('travel_tips') }}">
                 {{ form.hidden_tag() }}
-                <input type="text" class="form-control" id="searchInput" name="searched" placeholder="Search locations...">
-
+                {{ form.csrf_token }}
+                <input type="text" class="form-control" id="searchInput" name="location" placeholder="Search locations..." autocomplete="off">
                 <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    <button type="submit" class="btn btn-primary">Search</button>
                 </div>
             </form>
-
         </div>
     </div>
     {% if locations %}
@@ -50,9 +50,6 @@ $(function() {
             .appendTo(ul);
     };
 });
-
-
-
 </script>
 
 {% endblock %}

@@ -12,7 +12,6 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
-# TODO fix seraching in travel tips
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
@@ -301,14 +300,15 @@ def fetch_travel_tips(location):
 @app.route('/travel_tips', methods=['GET', 'POST'])
 @login_required
 def travel_tips():
-    search_form = SearchForm()  # Assuming you have a SearchForm defined in your webforms.py
-    if search_form.validate_on_submit():
-        search_term = search_form.searched.data
+    form = TravelTipsForm()  # Ensure this is the correct form class being instantiated
+    if request.method == 'POST' and form.validate_on_submit():
+        search_term = form.location.data  # Adjust according to your form field
         locations = Location.query.filter(Location.name.ilike(f'%{search_term}%')).all()
+        return render_template('travel_tips.html', locations=locations, form=form)
     else:
-        locations = Location.query.all()
-    locations = Location.query.order_by(Location.name).all()  # Adding order_by to sort alphabetically
-    return render_template('travel_tips.html', locations=locations, search_form=search_form)
+        locations = Location.query.order_by(Location.name).all()  # Default, show all locations alphabetically
+        return render_template('travel_tips.html', locations=locations, form=form)
+
 
 
 @app.route('/edit_travel_tip/<int:id>', methods=['GET', 'POST'])

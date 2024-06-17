@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{ location.name }}</h1>
-<div>
-    <p>{{ location.description|safe }}</p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ location.name }}</h1>
+        <a href="{{ url_for('travel_tips') }}" class="btn btn-primary">Back to Travel Tips</a>
+    </div>
+    <div>
+        <p>{{ location.description|safe }}</p>
+    </div>
 </div>
-<a href="{{ url_for('travel_tips') }}">Back to Travel Tips</a>
 {% endblock %}
