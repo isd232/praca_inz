@@ -1,11 +1,23 @@
 from datetime import datetime
 from functools import lru_cache
-
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
+
+
+# Create a Reply Model
+class Reply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('Users', backref='replies')
+    post = db.relationship('Posts', backref='replies')
+
 
 
 class Location(db.Model):
@@ -15,6 +27,7 @@ class Location(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
+# Create Travel Tips Model
 class TravelTip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     location = db.Column(db.String(255), nullable=False)

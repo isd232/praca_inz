@@ -287,3 +287,27 @@ h2 {
     margin-right: 800px;
 }
 
+.replies {
+    margin-left: 20px;
+}
+
+.reply-container {
+    border: 1px solid #e1e1e1;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    overflow-wrap: break-word;
+}
+
+.reply-content {
+    font-size: 16px;
+    color: #333;
+}
+
+.reply-meta {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+

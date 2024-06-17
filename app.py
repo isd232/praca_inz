@@ -2,13 +2,12 @@ from flask import Flask, render_template, flash, request, redirect, url_for, jso
 from flask_migrate import Migrate
 from datetime import date
 from flask_wtf import CSRFProtect
-from sqlalchemy import desc
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm, FuelForm, CurrencyForm, \
-    TravelTipsForm, LocationForm
-from models import Users, FuelCalculation, Posts, Votes, db, TravelTip, Location
+    TravelTipsForm, LocationForm, ReplyForm
+from models import Users, FuelCalculation, Posts, Votes, db, TravelTip, Location, Reply
 from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
@@ -410,10 +409,36 @@ def delete_location(id):
     return redirect(url_for('travel_tips_admin'))
 
 
-@app.route('/post/<int:id>')
+@app.route('/post/<int:id>', methods=['GET', 'POST'])
+@login_required
 def view_post(id):
     post = Posts.query.get_or_404(id)
-    return render_template('view_post.html', post=post)
+    reply_form = ReplyForm()
+
+    if request.method == 'POST' and reply_form.validate_on_submit():
+        new_reply = Reply(content=reply_form.content.data, user_id=current_user.id, post_id=id)
+        db.session.add(new_reply)
+        db.session.commit()
+        flash('Your reply has been posted.', 'success')
+        return redirect(url_for('view_post', id=id))
+    elif request.method == 'POST':
+        # Handle the case where form validation fails
+        flash('There was an error with your form submission.', 'error')
+
+    return render_template('post.html', post=post, reply_form=reply_form)
+
+
+@app.route('/post/<int:id>/reply', methods=['POST'])
+@login_required
+def post_reply(id):
+    form = ReplyForm()
+    if form.validate_on_submit():
+        reply = Reply(content=form.content.data, user_id=current_user.id, post_id=id)
+        db.session.add(reply)
+        db.session.commit()
+        flash('Your reply has been posted.', 'success')
+    return redirect(url_for('view_post', id=id))
+
 
 
 @app.route('/posts/upvote/<int:id>', methods=['POST'])
@@ -524,7 +549,8 @@ def posts():
 @app.route('/posts/<int:id>')
 def post(id):
     post = Posts.query.get_or_404(id)
-    return render_template("post.html", post=post)
+    reply_form = ReplyForm()  # Add this line
+    return render_template("post.html", post=post, reply_form=reply_form)
 
 
 # Edit Post
