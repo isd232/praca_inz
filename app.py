@@ -307,7 +307,7 @@ def travel_tips():
         locations = Location.query.filter(Location.name.ilike(f'%{search_term}%')).all()
     else:
         locations = Location.query.all()
-
+    locations = Location.query.order_by(Location.name).all()  # Adding order_by to sort alphabetically
     return render_template('travel_tips.html', locations=locations, search_form=search_form)
 
 

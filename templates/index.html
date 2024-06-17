@@ -3,14 +3,18 @@
 {% block content %}
 
 <!-- Hero Section -->
-
-
 <div class="container mt-4">
-    <div class="jumbotron bg-light p-5 rounded-lg text-center">
-        <img src="/static/images/icon.png" class="pic-main" alt="pic-main">
-        <h1 class="display-4">Welcome to Travel Forum!</h1>
-        <p class="lead">Explore insightful travel tips and the latest updates on your favorite destinations.</p>
-        <a class="btn btn-primary btn-lg" href="#" role="button">Discover More</a>
+    <div class="jumbotron bg-light p-5 rounded-lg">
+        <div class="row align-items-center"> <!-- Ensures vertical alignment -->
+            <div class="col-md-6 text-center">
+                <img src="/static/images/icon.png" class="img-fluid rounded-circle" alt="Travel Forum">
+            </div>
+            <div class="col-md-6 text-center text-md-left"> <!-- Centered text on small, left on md+ -->
+                <h1 class="display-4">Welcome to Travel Forum!</h1>
+                <p class="lead">Explore insightful travel tips and the latest updates on your favorite destinations.</p>
+                <a class="btn btn-primary btn-lg" href="#" role="button">Discover More</a>
+            </div>
+        </div>
     </div>
 </div>
 
