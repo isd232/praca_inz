@@ -12,7 +12,7 @@ from flask_ckeditor import CKEditor
 import uuid as uuid
 import os
 import requests
-
+# TODO fix seraching in travel tips
 
 # export FLASK_ENV=development
 # export FLASK_APP=app.py
